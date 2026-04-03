@@ -164,6 +164,49 @@ import { CommonModule } from '@angular/common';
         </div>
       </section>
 
+      <!-- DOWNLOAD APP SECTION -->
+      <section class="section section-dark">
+        <div class="section-container">
+          <div class="download-grid">
+            <div class="download-content">
+              <div class="section-badge">📱 Mobile App</div>
+              <h2>Download <span class="gradient-text">MadadQR App</span></h2>
+              <p>Get the full experience — scan QR codes, manage your vehicles, and receive instant alerts — all in one app.</p>
+              <ul class="download-features">
+                <li>⚡ Fastest QR scanning with live camera</li>
+                <li>🔔 Push notifications for alerts</li>
+                <li>📊 Full dashboard on your phone</li>
+                <li>🔒 Secure & lightweight</li>
+              </ul>
+              <div class="download-actions">
+                <a href="/MadadQR.apk" download="MadadQR.apk" class="btn-download-apk">
+                  <span class="apk-icon">🤖</span>
+                  <div class="apk-text">
+                    <span class="apk-sub">Download for</span>
+                    <span class="apk-main">Android APK</span>
+                  </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </a>
+                <div class="apk-note">
+                  <span>⚠️ Enable "Install from unknown sources" in your Android settings before installing.</span>
+                </div>
+              </div>
+            </div>
+            <div class="download-visual">
+              <div class="app-preview-card">
+                <img src="/MadadQRLogo.png" alt="MadadQR App" class="app-logo-large" />
+                <div class="app-name">MadadQR</div>
+                <div class="app-tagline">Madad bas ek scan door</div>
+                <div class="app-rating">★★★★★ <span>India's Vehicle Safety App</span></div>
+                <a href="/MadadQR.apk" download="MadadQR.apk" class="btn-download-inline">
+                  📥 Download APK
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- CTA SECTION -->
       <section class="section cta-section">
         <div class="section-container">
@@ -410,9 +453,31 @@ import { CommonModule } from '@angular/common';
       font-weight: 600;
     }
 
+    /* DOWNLOAD APP */
+    .download-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .download-content h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); color: #fff; font-weight: 800; margin: 0.5rem 0 1rem; }
+    .download-content p { color: #94a3b8; font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.25rem; }
+    .download-features { list-style: none; padding: 0; margin: 0 0 1.75rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .download-features li { color: #cbd5e1; font-size: 0.9rem; }
+    .btn-download-apk { display: inline-flex; align-items: center; gap: 1rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; text-decoration: none; padding: 1rem 1.5rem; border-radius: 14px; font-weight: 700; transition: all 0.25s; box-shadow: 0 4px 20px rgba(16,185,129,0.3); margin-bottom: 0.75rem; }
+    .btn-download-apk:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(16,185,129,0.5); }
+    .apk-icon { font-size: 1.75rem; }
+    .apk-text { display: flex; flex-direction: column; gap: 0.1rem; }
+    .apk-sub { font-size: 0.72rem; opacity: 0.8; }
+    .apk-main { font-size: 1rem; font-weight: 800; }
+    .apk-note { color: #64748b; font-size: 0.78rem; line-height: 1.5; max-width: 320px; }
+    .download-visual { display: flex; justify-content: center; }
+    .app-preview-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(99,102,241,0.2); border-radius: 24px; padding: 2.5rem 2rem; text-align: center; max-width: 280px; width: 100%; }
+    .app-logo-large { width: 100px; height: 100px; border-radius: 22px; object-fit: contain; margin-bottom: 1rem; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+    .app-name { color: #fff; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.2rem; }
+    .app-tagline { color: #64748b; font-size: 0.8rem; margin-bottom: 0.75rem; }
+    .app-rating { color: #f59e0b; font-size: 0.82rem; margin-bottom: 1.25rem; }
+    .app-rating span { color: #64748b; }
+    .btn-download-inline { display: inline-block; background: linear-gradient(135deg, #059669, #10b981); color: #fff; padding: 0.65rem 1.4rem; border-radius: 10px; font-weight: 700; font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
+    .btn-download-inline:hover { opacity: 0.9; transform: translateY(-1px); }
+
     /* CTA */
-    .cta-section { background: #06060f; }
-    .cta-card {
+    .cta-section { background: #06060f; }    .cta-card {
       position: relative;
       overflow: hidden;
       background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08));
@@ -436,6 +501,7 @@ import { CommonModule } from '@angular/common';
       .hero { flex-direction: column; padding: 4rem 1.5rem; min-height: auto; }
       .hero-visual { display: none; }
       .why-grid { grid-template-columns: 1fr; }
+      .download-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .step-arrow { display: none; }

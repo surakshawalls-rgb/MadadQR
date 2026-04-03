@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
     <nav class="navbar">
       <div class="nav-container">
         <a routerLink="/" class="nav-brand">
-          <span class="brand-icon">🔳</span>
+          <img src="/MadadQRLogo.png" alt="MadadQR" class="brand-logo-img" />
           <span class="brand-name">MadadQR</span>
         </a>
         <button class="nav-toggle" (click)="toggleMenu()" aria-label="Toggle menu">
@@ -55,7 +55,12 @@ import { CommonModule } from '@angular/common';
       font-weight: 800;
       color: #fff;
     }
-    .brand-icon { font-size: 1.4rem; }
+    .brand-logo-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
     .brand-name {
       background: linear-gradient(135deg, #6366f1, #a78bfa);
       -webkit-background-clip: text;

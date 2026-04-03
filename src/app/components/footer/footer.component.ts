@@ -9,7 +9,7 @@ import { RouterLink } from '@angular/router';
     <footer class="footer">
       <div class="footer-container">
         <div class="footer-brand">
-          <span class="brand-logo">🔳 MadadQR</span>
+          <span class="brand-logo"><img src="/MadadQRLogo.png" alt="MadadQR" style="width:28px;height:28px;border-radius:6px;object-fit:contain;vertical-align:middle;margin-right:6px;" /> MadadQR</span>
           <p>Madad bas ek scan door</p>
         </div>
         <div class="footer-links">
@@ -17,6 +17,7 @@ import { RouterLink } from '@angular/router';
           <a routerLink="/contact">Contact</a>
           <a routerLink="/privacy">Privacy</a>
           <a routerLink="/register">Get QR</a>
+          <a href="/MadadQR.apk" download="MadadQR.apk">Download App</a>
         </div>
         <div class="footer-copy">
           <p>© 2026 MadadQR. Designed for India 🇮🇳</p>
