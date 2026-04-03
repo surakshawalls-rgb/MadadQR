@@ -1,3 +1,23 @@
 import { Routes } from '@angular/router';
+import { HomeComponent } from './pages/home/home.component';
+import { RegisterComponent } from './pages/register/register.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { QrDisplayComponent } from './pages/qr-display/qr-display.component';
+import { ScanComponent } from './pages/scan/scan.component';
+import { EditProfileComponent } from './pages/edit-profile/edit-profile.component';
+import { AboutComponent } from './pages/about/about.component';
+import { ContactComponent } from './pages/contact/contact.component';
+import { PrivacyComponent } from './pages/privacy/privacy.component';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'dashboard', component: DashboardComponent },
+  { path: 'qr', component: QrDisplayComponent },
+  { path: 'v/:vehicleId', component: ScanComponent },
+  { path: 'edit-profile', component: EditProfileComponent },
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+  { path: 'privacy', component: PrivacyComponent },
+  { path: '**', redirectTo: '' }
+];

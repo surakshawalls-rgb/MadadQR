@@ -1,0 +1,324 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { SupabaseService } from '../../services/supabase.service';
+
+@Component({
+  selector: 'app-register',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink],
+  template: `
+    <div class="register-page">
+      <div class="register-container">
+
+        <!-- Left Panel -->
+        <div class="register-info">
+          <div class="info-glow"></div>
+          <div class="info-brand">🔳 MadadQR</div>
+          <h2>Register Your Vehicle</h2>
+          <p>Setup once. Protected forever. Ek baar register karo aur apni gadi safe karo.</p>
+          <ul class="info-list">
+            <li>✓ Free QR code generation</li>
+            <li>✓ Emergency contact alerts</li>
+            <li>✓ Works on any phone without app</li>
+            <li>✓ Setup in under 2 minutes</li>
+          </ul>
+          <div class="info-note">
+            🔒 Your details are only used for emergency communication.
+          </div>
+        </div>
+
+        <!-- Form Panel -->
+        <div class="register-form-panel">
+          <div class="form-header">
+            <h1>Get Your QR Code</h1>
+            <p>Fill in the details below</p>
+          </div>
+
+          <div *ngIf="successData" class="success-banner">
+            <div class="success-icon">✅</div>
+            <div>
+              <strong>Registration Complete!</strong>
+              <p>Your QR code has been generated. <a [routerLink]="['/dashboard']" [queryParams]="{userId: successData.userId}">Go to Dashboard →</a></p>
+            </div>
+          </div>
+
+          <div *ngIf="errorMsg" class="error-banner">{{ errorMsg }}</div>
+
+          <form (ngSubmit)="onSubmit()" #regForm="ngForm" *ngIf="!successData">
+            <!-- Owner Info -->
+            <div class="form-section">
+              <div class="section-label">Owner Information</div>
+              <div class="form-group">
+                <label>Full Name <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="form.name" name="name" required
+                  placeholder="e.g. Rahul Sharma" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Mobile Number <span class="required">*</span></label>
+                <div class="input-prefix">
+                  <span class="prefix">+91</span>
+                  <input type="tel" [(ngModel)]="form.mobile" name="mobile" required
+                    placeholder="9876543210" maxlength="10" pattern="[0-9]{10}"
+                    class="form-input prefix-input" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Vehicle Info -->
+            <div class="form-section">
+              <div class="section-label">Vehicle Information</div>
+              <div class="form-group">
+                <label>Vehicle Number <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="form.vehicleNumber" name="vehicleNumber" required
+                  placeholder="e.g. MH 12 AB 1234" class="form-input uppercase"
+                  (input)="toUpperCase($event)" />
+              </div>
+            </div>
+
+            <!-- Emergency Contacts -->
+            <div class="form-section">
+              <div class="section-label">Emergency Contacts</div>
+              <p class="section-hint">Inhe emergency alert bheja jayega</p>
+              <div class="emergency-contact" *ngFor="let c of form.emergencyContacts; let i = index">
+                <div class="ec-header">Contact {{ i + 1 }}</div>
+                <div class="ec-fields">
+                  <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" [(ngModel)]="c.name" [name]="'ecName' + i"
+                      placeholder="e.g. Priya (Wife)" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label>Mobile</label>
+                    <div class="input-prefix">
+                      <span class="prefix">+91</span>
+                      <input type="tel" [(ngModel)]="c.mobile" [name]="'ecMobile' + i"
+                        placeholder="9876543210" maxlength="10" pattern="[0-9]{10}"
+                        class="form-input prefix-input" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit" [disabled]="loading || !regForm.form.valid">
+              <span *ngIf="!loading">Generate My QR Code 🔳</span>
+              <span *ngIf="loading" class="loading-spinner">Registering…</span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  `,
+  styles: [`
+    .register-page {
+      min-height: calc(100vh - 64px);
+      background: #0a0a14;
+      display: flex;
+      align-items: center;
+      padding: 2rem 1.5rem;
+    }
+    .register-container {
+      max-width: 920px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 0;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+    .register-info {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08));
+      border-right: 1px solid rgba(99,102,241,0.15);
+      padding: 3rem 2rem;
+    }
+    .info-glow {
+      position: absolute;
+      top: -80px; left: -80px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .info-brand { color: #a78bfa; font-weight: 800; font-size: 1.1rem; margin-bottom: 1.5rem; }
+    .register-info h2 { color: #fff; font-size: 1.6rem; font-weight: 800; line-height: 1.3; margin-bottom: 0.75rem; }
+    .register-info p { color: #94a3b8; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    .info-list { list-style: none; padding: 0; margin: 0 0 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .info-list li { color: #cbd5e1; font-size: 0.88rem; display: flex; align-items: center; gap: 0.6rem; }
+    .info-note {
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      color: #94a3b8;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .register-form-panel { padding: 3rem 2.5rem; }
+    .form-header { margin-bottom: 2rem; }
+    .form-header h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .form-header p { color: #64748b; font-size: 0.9rem; }
+    .form-section { margin-bottom: 1.75rem; }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #6366f1;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(99,102,241,0.15);
+    }
+    .section-hint { color: #64748b; font-size: 0.8rem; margin: -0.4rem 0 0.75rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .required { color: #f87171; }
+    .form-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      padding: 0.7rem 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      box-sizing: border-box;
+    }
+    .form-input:focus { border-color: rgba(99,102,241,0.6); background: rgba(99,102,241,0.06); }
+    .form-input::placeholder { color: #334155; }
+    .uppercase { text-transform: uppercase; }
+    .input-prefix { display: flex; align-items: center; }
+    .prefix {
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-right: none;
+      color: #a78bfa;
+      padding: 0.7rem 0.75rem;
+      border-radius: 10px 0 0 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .prefix-input { border-radius: 0 10px 10px 0 !important; flex: 1; }
+    .emergency-contact {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(99,102,241,0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .ec-header { color: #6366f1; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .ec-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+      margin-top: 0.5rem;
+    }
+    .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,0.5); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .success-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .success-icon { font-size: 1.5rem; }
+    .success-banner strong { color: #4ade80; display: block; margin-bottom: 0.25rem; }
+    .success-banner p { color: #94a3b8; font-size: 0.88rem; margin: 0; }
+    .success-banner a { color: #6366f1; text-decoration: none; font-weight: 600; }
+    .error-banner {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 12px;
+      color: #f87171;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.88rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .register-container { grid-template-columns: 1fr; }
+      .register-info { display: none; }
+      .register-form-panel { padding: 2rem 1.5rem; }
+      .ec-fields { grid-template-columns: 1fr; }
+    }
+  `]
+})
+export class RegisterComponent {
+  form = {
+    name: '',
+    mobile: '',
+    vehicleNumber: '',
+    emergencyContacts: [
+      { name: '', mobile: '' },
+      { name: '', mobile: '' }
+    ]
+  };
+  loading = false;
+  errorMsg = '';
+  successData: { userId: string; vehicleId: string } | null = null;
+
+  constructor(private supa: SupabaseService, private router: Router) {}
+
+  toUpperCase(event: Event) {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.toUpperCase();
+    this.form.vehicleNumber = input.value;
+  }
+
+  async onSubmit() {
+    this.loading = true;
+    this.errorMsg = '';
+    try {
+      // Create user
+      const { data: user, error: userErr } = await this.supa.createUser({
+        name: this.form.name.trim(),
+        mobile: this.form.mobile.trim()
+      });
+      if (userErr) throw new Error(userErr.message);
+
+      // Create vehicle
+      const { data: vehicle, error: vErr } = await this.supa.createVehicle({
+        user_id: user.id,
+        vehicle_number: this.form.vehicleNumber.trim().toUpperCase()
+      });
+      if (vErr) throw new Error(vErr.message);
+
+      // Save emergency contacts
+      const validContacts = this.form.emergencyContacts.filter(c => c.mobile?.trim());
+      if (validContacts.length > 0) {
+        await this.supa.upsertEmergencyContacts(vehicle.id, validContacts);
+      }
+
+      // Store session info
+      localStorage.setItem('mq_userId', user.id);
+      localStorage.setItem('mq_vehicleId', vehicle.id);
+
+      this.successData = { userId: user.id, vehicleId: vehicle.id };
+      setTimeout(() => this.router.navigate(['/dashboard'], { queryParams: { userId: user.id } }), 1500);
+    } catch (err: any) {
+      this.errorMsg = err.message || 'Something went wrong. Please try again.';
+    } finally {
+      this.loading = false;
+    }
+  }
+}
