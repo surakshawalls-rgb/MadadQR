@@ -64,6 +64,15 @@ type ActionType = 'emergency' | 'parking' | null;
             </div>
           </a>
 
+          <!-- SMS Owner -->
+          <a [href]="smsUrl" class="action-btn btn-sms">
+            <span class="btn-icon">💬</span>
+            <div class="btn-text">
+              <span class="btn-title">Send SMS</span>
+              <span class="btn-desc">Text message bhejo owner ko</span>
+            </div>
+          </a>
+
           <!-- Parking Issue -->
           <button class="action-btn btn-parking" (click)="triggerAction('parking')">
             <span class="btn-icon">🚗</span>
@@ -75,7 +84,7 @@ type ActionType = 'emergency' | 'parking' | null;
 
           <!-- WhatsApp -->
           <a [href]="whatsappUrl" target="_blank" class="action-btn btn-whatsapp">
-            <span class="btn-icon">💬</span>
+            <span class="btn-icon">🟢</span>
             <div class="btn-text">
               <span class="btn-title">WhatsApp Owner</span>
               <span class="btn-desc">Quick message bhejo</span>
@@ -214,6 +223,7 @@ type ActionType = 'emergency' | 'parking' | null;
     .action-btn:hover { transform: translateY(-2px); }
     .btn-emergency { background: linear-gradient(135deg, #dc2626, #ef4444); color: #fff; box-shadow: 0 4px 20px rgba(220,38,38,0.3); }
     .btn-call { background: linear-gradient(135deg, #2563eb, #3b82f6); color: #fff; box-shadow: 0 4px 20px rgba(37,99,235,0.3); }
+    .btn-sms { background: linear-gradient(135deg, #0891b2, #06b6d4); color: #fff; box-shadow: 0 4px 20px rgba(8,145,178,0.3); }
     .btn-parking { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; box-shadow: 0 4px 20px rgba(217,119,6,0.3); }
     .btn-whatsapp { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; box-shadow: 0 4px 20px rgba(22,163,74,0.3); }
     .btn-icon { font-size: 1.75rem; flex-shrink: 0; }
@@ -294,6 +304,7 @@ export class ScanComponent implements OnInit {
   alertLoading = false;
   alertSent = false;
   whatsappUrl = '';
+  smsUrl = '';
 
   constructor(private supa: SupabaseService, private route: ActivatedRoute) {}
 
@@ -310,6 +321,7 @@ export class ScanComponent implements OnInit {
       const { data: contacts } = await this.supa.getEmergencyContacts(vehicleId);
       this.emergencyContacts = contacts || [];
       this.whatsappUrl = `https://wa.me/91${this.ownerMobile}?text=${encodeURIComponent('Your vehicle ' + data.vehicle_number + ' may need attention.')}`;
+      this.smsUrl = `sms:+91${this.ownerMobile}?body=${encodeURIComponent('Hi, I am contacting you about your vehicle ' + data.vehicle_number + ' via MadadQR.')}`;
     } finally {
       this.loading = false;
     }

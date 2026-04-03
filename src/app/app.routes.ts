@@ -4,6 +4,7 @@ import { RegisterComponent } from './pages/register/register.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { QrDisplayComponent } from './pages/qr-display/qr-display.component';
 import { ScanComponent } from './pages/scan/scan.component';
+import { ScannerComponent } from './pages/scanner/scanner.component';
 import { EditProfileComponent } from './pages/edit-profile/edit-profile.component';
 import { AboutComponent } from './pages/about/about.component';
 import { ContactComponent } from './pages/contact/contact.component';
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'qr', component: QrDisplayComponent },
+  { path: 'scan-qr', component: ScannerComponent },
   { path: 'v/:vehicleId', component: ScanComponent },
   { path: 'edit-profile', component: EditProfileComponent },
   { path: 'about', component: AboutComponent },

@@ -27,6 +27,7 @@ import { CommonModule } from '@angular/common';
               <span>Get Your QR</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
+            <a routerLink="/scan-qr" class="btn-secondary">🔍 Scan a QR</a>
             <a href="#how-it-works" class="btn-secondary">See How It Works</a>
           </div>
           <div class="hero-stats">

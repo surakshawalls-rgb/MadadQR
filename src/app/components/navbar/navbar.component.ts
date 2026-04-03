@@ -22,6 +22,7 @@ import { CommonModule } from '@angular/common';
           <li><a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Dashboard</a></li>
           <li><a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a></li>
           <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a></li>
+          <li><a routerLink="/scan-qr" class="nav-scan" routerLinkActive="active" (click)="closeMenu()">🔍 Scan QR</a></li>
           <li><a routerLink="/register" class="nav-cta" (click)="closeMenu()">Get Your QR</a></li>
         </ul>
       </div>
@@ -87,6 +88,14 @@ import { CommonModule } from '@angular/common';
       margin-left: 0.5rem;
     }
     .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99,102,241,0.4); }
+    .nav-scan {
+      background: rgba(99,102,241,0.1) !important;
+      border: 1px solid rgba(99,102,241,0.3) !important;
+      color: #a78bfa !important;
+      border-radius: 20px !important;
+      font-weight: 600 !important;
+    }
+    .nav-scan:hover { background: rgba(99,102,241,0.2) !important; color: #fff !important; }
     .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
     .nav-toggle span { display: block; width: 22px; height: 2px; background: #cbd5e1; border-radius: 2px; transition: 0.3s; }
     @media (max-width: 768px) {

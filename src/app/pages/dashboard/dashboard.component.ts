@@ -123,8 +123,12 @@ import { SupabaseService } from '../../services/supabase.service';
               <span class="action-icon">✏️</span>
               <span>Edit Profile</span>
             </a>
-            <a [href]="scanUrl" target="_blank" class="action-card">
+            <a routerLink="/scan-qr" class="action-card">
               <span class="action-icon">🔍</span>
+              <span>Scan a QR</span>
+            </a>
+            <a [href]="scanUrl" target="_blank" class="action-card">
+              <span class="action-icon">👁️</span>
               <span>Preview Scan Page</span>
             </a>
             <a routerLink="/register" class="action-card">
@@ -272,7 +276,7 @@ import { SupabaseService } from '../../services/supabase.service';
     }
     .quick-actions { margin-top: 1rem; }
     .quick-actions h3 { color: #fff; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
-    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .action-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
     .action-card {
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(99,102,241,0.15);
@@ -290,7 +294,7 @@ import { SupabaseService } from '../../services/supabase.service';
     .action-card span:last-child { color: #94a3b8; font-size: 0.82rem; font-weight: 600; }
     @media (max-width: 1024px) {
       .dash-grid { grid-template-columns: 1fr 1fr; }
-      .action-grid { grid-template-columns: repeat(2, 1fr); }
+      .action-grid { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 640px) {
       .dash-grid { grid-template-columns: 1fr; }
