@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { SupabaseService } from '../../services/supabase.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -76,6 +77,24 @@ import { SupabaseService } from '../../services/supabase.service';
           <div *ngIf="errorMsg" class="error-banner">{{ errorMsg }}</div>
 
           <form (ngSubmit)="onSubmit()" #regForm="ngForm" *ngIf="!successData">
+            <!-- Agent Mode Toggle -->
+            <div class="form-section agent-section">
+              <div class="section-label">Registration Mode</div>
+              <label class="agent-check-wrap">
+                <input type="checkbox" [(ngModel)]="isAgentMode" name="isAgentMode" class="agent-checkbox" />
+                <span class="agent-check-label">🛡️ I'm an Agent (bulk registration)</span>
+              </label>
+              <div *ngIf="isAgentMode" class="agent-pin-group">
+                <div class="form-group" style="margin-top:0.75rem; margin-bottom:0;">
+                  <label>Agent PIN <span class="required">*</span></label>
+                  <input type="password" [(ngModel)]="agentPinInput" name="agentPinInput"
+                    placeholder="Enter agent PIN" class="form-input" autocomplete="off" />
+                </div>
+                <div *ngIf="agentPinError" class="pin-error-msg">{{ agentPinError }}</div>
+                <div *ngIf="pinVerified" class="pin-ok-msg">✓ Agent Mode Active</div>
+              </div>
+            </div>
+
             <!-- Owner Info -->
             <div class="form-section">
               <div class="section-label">Owner Information</div>
@@ -311,6 +330,13 @@ import { SupabaseService } from '../../services/supabase.service';
       font-size: 0.88rem;
       margin-bottom: 1.5rem;
     }
+    .agent-section { border: 1px solid rgba(99,102,241,0.15); border-radius: 12px; padding: 0.9rem 1rem 1rem; background: rgba(99,102,241,0.03); }
+    .agent-check-wrap { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
+    .agent-checkbox { width: 16px; height: 16px; accent-color: #6366f1; cursor: pointer; flex-shrink: 0; }
+    .agent-check-label { color: #cbd5e1; font-size: 0.88rem; font-weight: 500; }
+    .agent-pin-group {}
+    .pin-error-msg { color: #f87171; font-size: 0.78rem; margin-top: 0.4rem; }
+    .pin-ok-msg { color: #4ade80; font-size: 0.78rem; margin-top: 0.4rem; font-weight: 600; }
     @media (max-width: 768px) {
       .register-container { grid-template-columns: 1fr; }
       .register-info { display: none; }
@@ -332,6 +358,12 @@ export class RegisterComponent {
   loading = false;
   errorMsg = '';
   successData: { userId: string; vehicleId: string; name: string; vehicleNumber: string; qrUrl: string } | null = null;
+
+  // Agent mode
+  isAgentMode = false;
+  agentPinInput = '';
+  agentPinError = '';
+  pinVerified = false;
 
   private readonly BASE_URL = 'https://madad-qr.vercel.app';
 
@@ -361,10 +393,26 @@ export class RegisterComponent {
       vehicleNumber: '',
       emergencyContacts: [{ name: '', mobile: '' }, { name: '', mobile: '' }]
     };
+    // Keep agent mode & verified PIN for the next customer
     this.cdr.detectChanges();
   }
 
   async onSubmit() {
+    // Validate agent PIN before making any API calls
+    if (this.isAgentMode) {
+      if (!this.agentPinInput.trim()) {
+        this.agentPinError = 'Please enter the Agent PIN.';
+        return;
+      }
+      if (this.agentPinInput.trim() !== environment.agentPin) {
+        this.agentPinError = 'Incorrect Agent PIN. Please check and try again.';
+        this.pinVerified = false;
+        this.cdr.detectChanges();
+        return;
+      }
+      this.pinVerified = true;
+      this.agentPinError = '';
+    }
     this.loading = true;
     this.errorMsg = '';
     this.cdr.detectChanges();
@@ -406,6 +454,9 @@ export class RegisterComponent {
         name: this.form.name.trim(),
         vehicleNumber: this.form.vehicleNumber.trim().toUpperCase()
       });
+
+      // Store role so dashboard knows if this is an agent session
+      localStorage.setItem('mq_role', this.isAgentMode ? 'agent' : 'customer');
 
       this.successData = {
         userId: user.id,

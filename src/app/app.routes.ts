@@ -9,6 +9,7 @@ import { EditProfileComponent } from './pages/edit-profile/edit-profile.componen
 import { AboutComponent } from './pages/about/about.component';
 import { ContactComponent } from './pages/contact/contact.component';
 import { PrivacyComponent } from './pages/privacy/privacy.component';
+import { AllVehiclesComponent } from './pages/all-vehicles/all-vehicles.component';
 import { LoginComponent } from './pages/login/login.component';
 
 export const routes: Routes = [
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent },
+  { path: 'all-vehicles', component: AllVehiclesComponent },
   { path: 'qr', component: QrDisplayComponent },
   { path: 'scan-qr', component: ScannerComponent },
   { path: 'v/:vehicleId', component: ScanComponent },

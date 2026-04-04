@@ -73,6 +73,18 @@ export class SupabaseService {
     return this.supabase.from('vehicles').update(data).eq('id', id).select().single();
   }
 
+  // Delete a vehicle by ID
+  async deleteVehicle(vehicleId: string) {
+    return this.supabase.from('vehicles').delete().eq('id', vehicleId);
+  }
+
+  async getAllVehiclesWithOwners() {
+    return this.supabase
+      .from('vehicles')
+      .select('id, vehicle_number, created_at, users(id, name, mobile)')
+      .order('created_at', { ascending: false });
+  }
+
   // ── Emergency Contacts ─────────────────────────────────────────────────────
 
   async createEmergencyContacts(contacts: EmergencyContact[]) {

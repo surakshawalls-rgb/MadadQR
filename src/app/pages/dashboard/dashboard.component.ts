@@ -14,6 +14,7 @@ const BASE_URL = 'https://madad-qr.vercel.app';
       <div class="dash-container">
 
         <!-- Header -->
+
         <div class="dash-header">
           <div>
             <h1>Your Dashboard</h1>
@@ -21,6 +22,7 @@ const BASE_URL = 'https://madad-qr.vercel.app';
           </div>
           <div class="header-actions">
             <a routerLink="/register" class="btn-new">+ Register Another</a>
+            <a routerLink="/all-vehicles" class="btn-all-vehicles">📋 All Vehicles</a>
           </div>
         </div>
 
@@ -37,7 +39,7 @@ const BASE_URL = 'https://madad-qr.vercel.app';
         </div>
 
         <!-- Agent Session List (multiple registrations) -->
-        <div *ngIf="!loading && sessions.length > 1" class="session-section">
+        <div *ngIf="!loading && isAgent && sessions.length > 0" class="session-section">
           <div class="session-header">
             <h2>Registered Vehicles This Session</h2>
             <span class="session-count">{{ sessions.length }} vehicles</span>
@@ -188,6 +190,18 @@ const BASE_URL = 'https://madad-qr.vercel.app';
       transition: all 0.2s;
     }
     .btn-new:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-all-vehicles {
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.35);
+      color: #a78bfa;
+      padding: 0.55rem 1.2rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-all-vehicles:hover { background: rgba(99,102,241,0.2); color: #fff; }
     /* Session list */
     .session-section { margin-bottom: 2.5rem; }
     .session-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
@@ -353,6 +367,7 @@ export class DashboardComponent implements OnInit {
   vehicle: any = null;
   emergencyContacts: any[] = [];
   sessions: { userId: string; vehicleId: string; name: string; vehicleNumber: string }[] = [];
+  isAgent = false;
   loading = true;
   errorMsg = '';
   qrUrl = '';
@@ -363,6 +378,7 @@ export class DashboardComponent implements OnInit {
   async ngOnInit() {
     // Load session list (agent multi-registration support)
     this.sessions = this.supa.getRegistrationSessions();
+    this.isAgent = localStorage.getItem('mq_role') === 'agent';
 
     const userId = this.route.snapshot.queryParamMap.get('userId') || localStorage.getItem('mq_userId');
     console.log('[Dashboard] ngOnInit userId:', userId);

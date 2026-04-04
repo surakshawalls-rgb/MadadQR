@@ -24,7 +24,8 @@ import { SupabaseService } from '../../services/supabase.service';
           <li><a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a></li>
           <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a></li>
           <li><a routerLink="/scan-qr" class="nav-scan" routerLinkActive="active" (click)="closeMenu()">🔍 Scan QR</a></li>
-          <li *ngIf="!isLoggedIn"><a routerLink="/login" class="nav-cta" (click)="closeMenu()">Login</a></li>
+          <li><a routerLink="/all-vehicles" routerLinkActive="active" (click)="closeMenu()">📋 All Vehicles</a></li>
+          <li *ngIf="!isLoggedIn"><a routerLink="/login" routerLinkActive="active" (click)="closeMenu()">Login</a></li>
           <li *ngIf="isLoggedIn"><a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">My Dashboard</a></li>
           <li *ngIf="isLoggedIn"><button class="nav-logout" (click)="logout()">Logout</button></li>
           <li *ngIf="!isLoggedIn"><a routerLink="/register" class="nav-cta" (click)="closeMenu()">Get Your QR</a></li>
