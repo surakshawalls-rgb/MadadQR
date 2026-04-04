@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
@@ -311,33 +311,47 @@ export class DashboardComponent implements OnInit {
   qrUrl = '';
   scanUrl = '';
 
-  constructor(private supa: SupabaseService, private route: ActivatedRoute) {}
+  constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
     const userId = this.route.snapshot.queryParamMap.get('userId') || localStorage.getItem('mq_userId');
+    console.log('[Dashboard] ngOnInit userId:', userId);
     if (!userId) {
       this.loading = false;
       this.errorMsg = 'No registered vehicle found. Please register first.';
+      console.error('[Dashboard] No userId found');
+      this.cdr.detectChanges();
       return;
     }
     try {
-      const { data: vehicles } = await this.supa.getVehiclesByUser(userId);
+      console.log('[Dashboard] Fetching vehicles for userId:', userId);
+      const { data: vehicles, error: vehiclesErr } = await this.supa.getVehiclesByUser(userId);
+      console.log('[Dashboard] Vehicles result:', { vehicles, vehiclesErr });
       if (!vehicles || vehicles.length === 0) {
         this.errorMsg = 'No vehicles found. Please register first.';
         this.loading = false;
+        console.error('[Dashboard] No vehicles found for userId:', userId);
+        this.cdr.detectChanges();
         return;
       }
       this.vehicle = vehicles[0];
-      const { data: userData } = await this.supa.getUserById(userId);
+      console.log('[Dashboard] Selected vehicle:', this.vehicle);
+      const { data: userData, error: userErr } = await this.supa.getUserById(userId);
+      console.log('[Dashboard] User result:', { userData, userErr });
       this.user = userData;
-      const { data: contacts } = await this.supa.getEmergencyContacts(this.vehicle.id);
+      const { data: contacts, error: contactsErr } = await this.supa.getEmergencyContacts(this.vehicle.id);
+      console.log('[Dashboard] Emergency contacts result:', { contacts, contactsErr });
       this.emergencyContacts = contacts || [];
       this.qrUrl = `${window.location.origin}/v/${this.vehicle.id}`;
       this.scanUrl = this.qrUrl;
+      console.log('[Dashboard] Dashboard loaded successfully');
     } catch (err: any) {
       this.errorMsg = 'Failed to load dashboard. Please try again.';
+      console.error('[Dashboard] Error loading dashboard:', err);
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
+      console.log('[Dashboard] ngOnInit finished, loading:', this.loading);
     }
   }
 }

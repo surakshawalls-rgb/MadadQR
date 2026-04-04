@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -277,7 +277,7 @@ export class RegisterComponent {
   errorMsg = '';
   successData: { userId: string; vehicleId: string } | null = null;
 
-  constructor(private supa: SupabaseService, private router: Router) {}
+  constructor(private supa: SupabaseService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   toUpperCase(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -288,25 +288,35 @@ export class RegisterComponent {
   async onSubmit() {
     this.loading = true;
     this.errorMsg = '';
+    this.cdr.detectChanges();
+    console.log('[Register] Submit started', this.form);
     try {
       // Create user
+      console.log('[Register] Creating user...');
       const { data: user, error: userErr } = await this.supa.createUser({
         name: this.form.name.trim(),
         mobile: this.form.mobile.trim()
       });
+      console.log('[Register] User create result:', { user, userErr });
       if (userErr) throw new Error(userErr.message);
+      if (!user || !user.id) throw new Error('User creation failed, no user ID returned');
 
       // Create vehicle
+      console.log('[Register] Creating vehicle...');
       const { data: vehicle, error: vErr } = await this.supa.createVehicle({
         user_id: user.id,
         vehicle_number: this.form.vehicleNumber.trim().toUpperCase()
       });
+      console.log('[Register] Vehicle create result:', { vehicle, vErr });
       if (vErr) throw new Error(vErr.message);
+      if (!vehicle || !vehicle.id) throw new Error('Vehicle creation failed, no vehicle ID returned');
 
       // Save emergency contacts
       const validContacts = this.form.emergencyContacts.filter(c => c.mobile?.trim());
       if (validContacts.length > 0) {
+        console.log('[Register] Saving emergency contacts:', validContacts);
         await this.supa.upsertEmergencyContacts(vehicle.id, validContacts);
+        console.log('[Register] Emergency contacts saved');
       }
 
       // Store session info
@@ -314,11 +324,17 @@ export class RegisterComponent {
       localStorage.setItem('mq_vehicleId', vehicle.id);
 
       this.successData = { userId: user.id, vehicleId: vehicle.id };
+      this.cdr.detectChanges();
+      console.log('[Register] Registration successful', this.successData);
       setTimeout(() => this.router.navigate(['/dashboard'], { queryParams: { userId: user.id } }), 1500);
     } catch (err: any) {
+      console.error('[Register] Registration error:', err);
       this.errorMsg = err.message || 'Something went wrong. Please try again.';
+      this.cdr.detectChanges();
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
+      console.log('[Register] Submit finished, loading:', this.loading);
     }
   }
 }

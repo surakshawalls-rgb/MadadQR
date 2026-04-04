@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
@@ -169,18 +169,22 @@ export class QrDisplayComponent implements OnInit {
   qrUrl = '';
   canShare = false;
 
-  constructor(private supa: SupabaseService, private route: ActivatedRoute) {}
+  constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
     this.canShare = !!navigator.share;
+    this.cdr.detectChanges();
     const vehicleId = this.route.snapshot.queryParamMap.get('vehicleId') || localStorage.getItem('mq_vehicleId');
-    if (!vehicleId) { this.loading = false; return; }
+    const baseUrl = 'https://madad-qr.vercel.app';
+    if (!vehicleId) { this.loading = false; this.cdr.detectChanges(); return; }
     try {
       const { data } = await this.supa.getVehicleById(vehicleId);
       this.vehicle = data;
-      this.qrUrl = `${window.location.origin}/v/${vehicleId}`;
+      this.qrUrl = `${baseUrl}/v/${vehicleId}`;
+      this.cdr.detectChanges();
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
