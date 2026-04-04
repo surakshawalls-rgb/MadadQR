@@ -198,9 +198,7 @@ import { CommonModule } from '@angular/common';
                 <div class="app-name">MadadQR</div>
                 <div class="app-tagline">Madad bas ek scan door</div>
                 <div class="app-rating">★★★★★ <span>India's Vehicle Safety App</span></div>
-                <a href="/MadadQR.apk" download="MadadQR.apk" class="btn-download-inline">
-                  📥 Download APK
-                </a>
+                <!-- Download button removed as per request -->
               </div>
             </div>
           </div>
