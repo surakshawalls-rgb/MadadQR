@@ -2,12 +2,13 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, QRCodeComponent],
   template: `
     <div class="register-page">
       <div class="register-container">
@@ -36,11 +37,39 @@ import { SupabaseService } from '../../services/supabase.service';
             <p>Fill in the details below</p>
           </div>
 
-          <div *ngIf="successData" class="success-banner">
-            <div class="success-icon">✅</div>
-            <div>
-              <strong>Registration Complete!</strong>
-              <p>Your QR code has been generated. <a [routerLink]="['/dashboard']" [queryParams]="{userId: successData.userId}">Go to Dashboard →</a></p>
+          <!-- Success Card with inline QR (shown after registration) -->
+          <div *ngIf="successData" class="success-card">
+            <div class="success-card-header">
+              <div class="success-icon">✅</div>
+              <div>
+                <strong>Registration Complete!</strong>
+                <p>{{ successData.name }} — {{ successData.vehicleNumber }}</p>
+              </div>
+            </div>
+            <div class="qr-preview">
+              <div class="qr-box">
+                <qrcode
+                  [qrdata]="successData.qrUrl"
+                  [width]="160"
+                  [errorCorrectionLevel]="'M'"
+                  [colorDark]="'#1e1b4b'"
+                  [colorLight]="'#ffffff'"
+                  [margin]="2">
+                </qrcode>
+              </div>
+              <div class="qr-info">
+                <div class="qr-vehicle-num">{{ successData.vehicleNumber }}</div>
+                <div class="qr-owner">{{ successData.name }}</div>
+                <div class="qr-url-small">{{ successData.qrUrl }}</div>
+                <div class="qr-btns">
+                  <button (click)="downloadQR()" class="btn-qr-download">📥 Download QR</button>
+                  <a [routerLink]="['/qr']" [queryParams]="{vehicleId: successData.vehicleId}" class="btn-qr-view">🔍 Full QR</a>
+                </div>
+              </div>
+            </div>
+            <div class="success-actions">
+              <button (click)="registerNext()" class="btn-register-next">➕ Register Next Customer</button>
+              <a [routerLink]="['/dashboard']" [queryParams]="{userId: successData.userId}" class="btn-goto-dash">📊 View Dashboard →</a>
             </div>
           </div>
 
@@ -232,20 +261,47 @@ import { SupabaseService } from '../../services/supabase.service';
     }
     .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,0.5); }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-    .success-banner {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      background: rgba(34,197,94,0.1);
+    .success-card {
+      background: rgba(34,197,94,0.07);
       border: 1px solid rgba(34,197,94,0.3);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 1.25rem;
       margin-bottom: 1.5rem;
     }
-    .success-icon { font-size: 1.5rem; }
-    .success-banner strong { color: #4ade80; display: block; margin-bottom: 0.25rem; }
-    .success-banner p { color: #94a3b8; font-size: 0.88rem; margin: 0; }
-    .success-banner a { color: #6366f1; text-decoration: none; font-weight: 600; }
+    .success-card-header { display: flex; align-items: flex-start; gap: 0.85rem; margin-bottom: 1rem; }
+    .success-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .success-card-header strong { color: #4ade80; display: block; margin-bottom: 0.2rem; font-size: 1rem; }
+    .success-card-header p { color: #94a3b8; font-size: 0.85rem; margin: 0; }
+    .qr-preview { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 0.75rem; }
+    .qr-box { background: #fff; border-radius: 8px; padding: 0.4rem; flex-shrink: 0; }
+    .qr-info { flex: 1; min-width: 0; }
+    .qr-vehicle-num { font-family: monospace; font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: 0.15rem; }
+    .qr-owner { color: #94a3b8; font-size: 0.82rem; margin-bottom: 0.25rem; }
+    .qr-url-small { color: #475569; font-size: 0.68rem; font-family: monospace; word-break: break-all; margin-bottom: 0.6rem; }
+    .qr-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn-qr-download {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff; border: none; border-radius: 8px;
+      padding: 0.45rem 0.85rem; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    }
+    .btn-qr-view {
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.3);
+      color: #a78bfa; border-radius: 8px;
+      padding: 0.45rem 0.85rem; font-size: 0.8rem; font-weight: 600; text-decoration: none;
+    }
+    .success-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn-register-next {
+      flex: 1; background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; border: none; border-radius: 10px;
+      padding: 0.7rem 1rem; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+    }
+    .btn-goto-dash {
+      flex: 1; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1); color: #94a3b8;
+      border-radius: 10px; padding: 0.7rem 1rem;
+      font-size: 0.9rem; font-weight: 600; text-decoration: none; text-align: center;
+    }
     .error-banner {
       background: rgba(248,113,113,0.1);
       border: 1px solid rgba(248,113,113,0.3);
@@ -275,7 +331,9 @@ export class RegisterComponent {
   };
   loading = false;
   errorMsg = '';
-  successData: { userId: string; vehicleId: string } | null = null;
+  successData: { userId: string; vehicleId: string; name: string; vehicleNumber: string; qrUrl: string } | null = null;
+
+  private readonly BASE_URL = 'https://madad-qr.vercel.app';
 
   constructor(private supa: SupabaseService, private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -283,6 +341,27 @@ export class RegisterComponent {
     const input = event.target as HTMLInputElement;
     input.value = input.value.toUpperCase();
     this.form.vehicleNumber = input.value;
+  }
+
+  downloadQR() {
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = `MadadQR-${this.successData?.vehicleNumber || 'QR'}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  registerNext() {
+    this.successData = null;
+    this.errorMsg = '';
+    this.form = {
+      name: '',
+      mobile: '',
+      vehicleNumber: '',
+      emergencyContacts: [{ name: '', mobile: '' }, { name: '', mobile: '' }]
+    };
+    this.cdr.detectChanges();
   }
 
   async onSubmit() {
@@ -319,14 +398,24 @@ export class RegisterComponent {
         console.log('[Register] Emergency contacts saved');
       }
 
-      // Store session info
-      localStorage.setItem('mq_userId', user.id);
-      localStorage.setItem('mq_vehicleId', vehicle.id);
+      // Store session info using multi-session tracking
+      const qrUrl = `${this.BASE_URL}/v/${vehicle.id}`;
+      this.supa.addRegistrationSession({
+        userId: user.id,
+        vehicleId: vehicle.id,
+        name: this.form.name.trim(),
+        vehicleNumber: this.form.vehicleNumber.trim().toUpperCase()
+      });
 
-      this.successData = { userId: user.id, vehicleId: vehicle.id };
+      this.successData = {
+        userId: user.id,
+        vehicleId: vehicle.id,
+        name: this.form.name.trim(),
+        vehicleNumber: this.form.vehicleNumber.trim().toUpperCase(),
+        qrUrl
+      };
       this.cdr.detectChanges();
       console.log('[Register] Registration successful', this.successData);
-      setTimeout(() => this.router.navigate(['/dashboard'], { queryParams: { userId: user.id } }), 1500);
     } catch (err: any) {
       console.error('[Register] Registration error:', err);
       this.errorMsg = err.message || 'Something went wrong. Please try again.';

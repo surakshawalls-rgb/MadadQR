@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
   selector: 'app-navbar',
@@ -23,7 +24,10 @@ import { CommonModule } from '@angular/common';
           <li><a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a></li>
           <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a></li>
           <li><a routerLink="/scan-qr" class="nav-scan" routerLinkActive="active" (click)="closeMenu()">🔍 Scan QR</a></li>
-          <li><a routerLink="/register" class="nav-cta" (click)="closeMenu()">Get Your QR</a></li>
+          <li *ngIf="!isLoggedIn"><a routerLink="/login" class="nav-cta" (click)="closeMenu()">Login</a></li>
+          <li *ngIf="isLoggedIn"><a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">My Dashboard</a></li>
+          <li *ngIf="isLoggedIn"><button class="nav-logout" (click)="logout()">Logout</button></li>
+          <li *ngIf="!isLoggedIn"><a routerLink="/register" class="nav-cta" (click)="closeMenu()">Get Your QR</a></li>
         </ul>
       </div>
     </nav>
@@ -101,6 +105,18 @@ import { CommonModule } from '@angular/common';
       font-weight: 600 !important;
     }
     .nav-scan:hover { background: rgba(99,102,241,0.2) !important; color: #fff !important; }
+    .nav-logout {
+      background: transparent;
+      border: 1px solid rgba(248,113,113,0.3);
+      color: #f87171;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-logout:hover { background: rgba(248,113,113,0.1); }
     .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
     .nav-toggle span { display: block; width: 22px; height: 2px; background: #cbd5e1; border-radius: 2px; transition: 0.3s; }
     @media (max-width: 768px) {
@@ -122,8 +138,29 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   menuOpen = false;
+  isLoggedIn = false;
+
+  constructor(private supa: SupabaseService, private router: Router) {}
+
+  ngOnInit() {
+    // Check initial state
+    this.isLoggedIn = !!localStorage.getItem('mq_userId');
+    // Subscribe to auth changes
+    this.supa.onAuthStateChange(session => {
+      this.isLoggedIn = !!session || !!localStorage.getItem('mq_userId');
+    });
+  }
+
+  async logout() {
+    await this.supa.signOut();
+    this.supa.clearRegistrationSessions();
+    this.isLoggedIn = false;
+    this.closeMenu();
+    this.router.navigate(['/']);
+  }
+
   toggleMenu() { this.menuOpen = !this.menuOpen; }
   closeMenu() { this.menuOpen = false; }
 }

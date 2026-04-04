@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -212,11 +212,11 @@ export class EditProfileComponent implements OnInit {
   successMsg = '';
   errorMsg = '';
 
-  constructor(private supa: SupabaseService, private route: ActivatedRoute) {}
+  constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
     this.vehicleId = this.route.snapshot.queryParamMap.get('vehicleId') || localStorage.getItem('mq_vehicleId') || '';
-    if (!this.vehicleId) { this.loading = false; return; }
+    if (!this.vehicleId) { this.loading = false; this.cdr.detectChanges(); return; }
     try {
       const { data: vehicle } = await this.supa.getVehicleById(this.vehicleId);
       if (vehicle) {
@@ -230,7 +230,10 @@ export class EditProfileComponent implements OnInit {
           while (this.form.emergencyContacts.length < 2) this.form.emergencyContacts.push({ name: '', mobile: '' });
         }
       }
-    } finally { this.loading = false; }
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   toUpperCase(event: Event) {
@@ -243,6 +246,7 @@ export class EditProfileComponent implements OnInit {
     this.saving = true;
     this.successMsg = '';
     this.errorMsg = '';
+    this.cdr.detectChanges();
     try {
       await this.supa.updateUser(this.userId, { name: this.form.name.trim(), mobile: this.form.mobile.trim() });
       await this.supa.updateVehicle(this.vehicleId, { vehicle_number: this.form.vehicleNumber.trim().toUpperCase() });
@@ -250,6 +254,9 @@ export class EditProfileComponent implements OnInit {
       this.successMsg = 'Details updated successfully!';
     } catch (err: any) {
       this.errorMsg = err.message || 'Update failed. Please try again.';
-    } finally { this.saving = false; }
+    } finally {
+      this.saving = false;
+      this.cdr.detectChanges();
+    }
   }
 }

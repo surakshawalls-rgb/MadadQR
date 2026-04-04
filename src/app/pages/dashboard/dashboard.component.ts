@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { SupabaseService } from '../../services/supabase.service';
+
+const BASE_URL = 'https://madad-qr.vercel.app';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -17,7 +19,9 @@ import { SupabaseService } from '../../services/supabase.service';
             <h1>Your Dashboard</h1>
             <p *ngIf="vehicle">Welcome back, <span class="accent">{{ user?.name }}</span></p>
           </div>
-          <a routerLink="/register" class="btn-new">+ Register Another</a>
+          <div class="header-actions">
+            <a routerLink="/register" class="btn-new">+ Register Another</a>
+          </div>
         </div>
 
         <!-- Loading -->
@@ -30,6 +34,23 @@ import { SupabaseService } from '../../services/supabase.service';
         <div *ngIf="errorMsg && !loading" class="error-card">
           <p>{{ errorMsg }}</p>
           <a routerLink="/register" class="btn-link">Register Now →</a>
+        </div>
+
+        <!-- Agent Session List (multiple registrations) -->
+        <div *ngIf="!loading && sessions.length > 1" class="session-section">
+          <div class="session-header">
+            <h2>Registered Vehicles This Session</h2>
+            <span class="session-count">{{ sessions.length }} vehicles</span>
+          </div>
+          <div class="session-grid">
+            <div *ngFor="let s of sessions" class="session-card" [class.active-session]="s.vehicleId === vehicle?.id" (click)="switchVehicle(s.userId, s.vehicleId)">
+              <div class="session-plate">{{ s.vehicleNumber }}</div>
+              <div class="session-name">{{ s.name }}</div>
+              <div class="session-actions">
+                <a [routerLink]="['/qr']" [queryParams]="{vehicleId: s.vehicleId}" class="btn-session-qr" (click)="$event.stopPropagation()">📥 QR</a>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Dashboard Content -->
@@ -154,6 +175,7 @@ import { SupabaseService } from '../../services/supabase.service';
     }
     .dash-header h1 { color: #fff; font-size: 1.8rem; font-weight: 800; margin: 0 0 0.2rem; }
     .dash-header p { color: #64748b; margin: 0; font-size: 0.9rem; }
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
     .accent { color: #a78bfa; }
     .btn-new {
       background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -166,6 +188,30 @@ import { SupabaseService } from '../../services/supabase.service';
       transition: all 0.2s;
     }
     .btn-new:hover { opacity: 0.85; transform: translateY(-1px); }
+    /* Session list */
+    .session-section { margin-bottom: 2.5rem; }
+    .session-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+    .session-header h2 { color: #fff; font-size: 1rem; font-weight: 700; margin: 0; }
+    .session-count { background: rgba(99,102,241,0.15); color: #a78bfa; font-size: 0.78rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .session-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+    .session-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(99,102,241,0.15);
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .session-card:hover { border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.05); }
+    .session-card.active-session { border-color: rgba(99,102,241,0.6); background: rgba(99,102,241,0.08); }
+    .session-plate { font-family: monospace; font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .session-name { color: #94a3b8; font-size: 0.82rem; margin-bottom: 0.6rem; }
+    .session-actions { display: flex; gap: 0.4rem; }
+    .btn-session-qr {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 0.75rem; font-weight: 700;
+      padding: 0.3rem 0.7rem; border-radius: 6px; text-decoration: none;
+    }
     .loading-state { text-align: center; padding: 4rem; }
     .spinner {
       width: 40px; height: 40px;
@@ -306,6 +352,7 @@ export class DashboardComponent implements OnInit {
   user: any = null;
   vehicle: any = null;
   emergencyContacts: any[] = [];
+  sessions: { userId: string; vehicleId: string; name: string; vehicleNumber: string }[] = [];
   loading = true;
   errorMsg = '';
   qrUrl = '';
@@ -314,6 +361,9 @@ export class DashboardComponent implements OnInit {
   constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
+    // Load session list (agent multi-registration support)
+    this.sessions = this.supa.getRegistrationSessions();
+
     const userId = this.route.snapshot.queryParamMap.get('userId') || localStorage.getItem('mq_userId');
     console.log('[Dashboard] ngOnInit userId:', userId);
     if (!userId) {
@@ -323,6 +373,16 @@ export class DashboardComponent implements OnInit {
       this.cdr.detectChanges();
       return;
     }
+    await this.loadForUser(userId);
+  }
+
+  async switchVehicle(userId: string, vehicleId: string) {
+    this.loading = true;
+    this.cdr.detectChanges();
+    await this.loadForUser(userId, vehicleId);
+  }
+
+  private async loadForUser(userId: string, vehicleId?: string) {
     try {
       console.log('[Dashboard] Fetching vehicles for userId:', userId);
       const { data: vehicles, error: vehiclesErr } = await this.supa.getVehiclesByUser(userId);
@@ -334,7 +394,10 @@ export class DashboardComponent implements OnInit {
         this.cdr.detectChanges();
         return;
       }
-      this.vehicle = vehicles[0];
+      // If vehicleId specified use it, otherwise use first
+      this.vehicle = vehicleId
+        ? (vehicles.find((v: any) => v.id === vehicleId) || vehicles[0])
+        : vehicles[0];
       console.log('[Dashboard] Selected vehicle:', this.vehicle);
       const { data: userData, error: userErr } = await this.supa.getUserById(userId);
       console.log('[Dashboard] User result:', { userData, userErr });
@@ -342,7 +405,7 @@ export class DashboardComponent implements OnInit {
       const { data: contacts, error: contactsErr } = await this.supa.getEmergencyContacts(this.vehicle.id);
       console.log('[Dashboard] Emergency contacts result:', { contacts, contactsErr });
       this.emergencyContacts = contacts || [];
-      this.qrUrl = `${window.location.origin}/v/${this.vehicle.id}`;
+      this.qrUrl = `${BASE_URL}/v/${this.vehicle.id}`;
       this.scanUrl = this.qrUrl;
       console.log('[Dashboard] Dashboard loaded successfully');
     } catch (err: any) {

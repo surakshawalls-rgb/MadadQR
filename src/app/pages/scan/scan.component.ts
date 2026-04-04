@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
@@ -306,14 +306,14 @@ export class ScanComponent implements OnInit {
   whatsappUrl = '';
   smsUrl = '';
 
-  constructor(private supa: SupabaseService, private route: ActivatedRoute) {}
+  constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
     const vehicleId = this.route.snapshot.paramMap.get('vehicleId');
-    if (!vehicleId) { this.loading = false; return; }
+    if (!vehicleId) { this.loading = false; this.cdr.detectChanges(); return; }
     try {
       const { data, error } = await this.supa.getVehicleById(vehicleId);
-      if (error || !data) { this.loading = false; return; }
+      if (error || !data) { this.loading = false; this.cdr.detectChanges(); return; }
       this.vehicle = data;
       const u = (data as any).users;
       this.ownerName = u?.name || 'Owner';
@@ -324,6 +324,7 @@ export class ScanComponent implements OnInit {
       this.smsUrl = `sms:+91${this.ownerMobile}?body=${encodeURIComponent('Hi, I am contacting you about your vehicle ' + data.vehicle_number + ' via MadadQR.')}`;
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
