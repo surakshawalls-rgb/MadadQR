@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
       <div class="footer-container">
         <div class="footer-brand">
           <span class="brand-logo"><img src="/MadadQRLogo.png" alt="MadadQR" style="width:28px;height:28px;border-radius:6px;object-fit:contain;vertical-align:middle;margin-right:6px;" /> MadadQR</span>
-          <p>Madad bas ek scan door</p>
+          <p>Quick vehicle assistance through a simple QR flow</p>
         </div>
         <div class="footer-links">
           <a routerLink="/about">About</a>
@@ -20,8 +20,9 @@ import { RouterLink } from '@angular/router';
           <a href="/MadadQR.apk" download="MadadQR.apk">Download App</a>
         </div>
         <div class="footer-copy">
-          <p>© 2026 MadadQR. Designed for India 🇮🇳</p>
+          <p>© 2026 MadadQR. Built for reliable everyday use.</p>
           <p><a href="mailto:madadqr@gmail.com">madadqr@gmail.com</a></p>
+          <p class="footer-credit">Designed and developed by <a href="https://www.surakshawalls.space/software" target="_blank" rel="noopener noreferrer">Suraksha Software</a></p>
         </div>
       </div>
     </footer>
@@ -67,6 +68,8 @@ import { RouterLink } from '@angular/router';
     .footer-copy { text-align: right; }
     .footer-copy p { color: #475569; font-size: 0.82rem; margin: 0.15rem 0; }
     .footer-copy a { color: #6366f1; text-decoration: none; }
+    .footer-credit { color: #64748b; }
+    .footer-credit a { color: #a78bfa; font-weight: 700; }
     @media (max-width: 640px) {
       .footer-copy { text-align: left; }
     }

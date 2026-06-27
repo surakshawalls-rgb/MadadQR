@@ -1,6 +1,7 @@
-import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { SupabaseService } from '../../services/supabase.service';
 
@@ -26,27 +27,76 @@ import { SupabaseService } from '../../services/supabase.service';
             <p>Print karo aur apni gaadi ki windshield par chipkao</p>
           </div>
 
+          <!-- QR STICKER CARD -->
           <div class="qr-card" id="printArea">
-            <div class="qr-card-top">
-              <div class="qr-brand">🔳 MadadQR</div>
-              <div class="qr-tagline">Madad bas ek scan door</div>
+
+            <!-- Header Bar -->
+            <div class="sticker-header">
+              <span class="emerg-icon">🚨</span>
+              <span class="emerg-title">IN CASE OF EMERGENCY</span>
+              <img *ngIf="branding?.logo_url" [src]="branding.logo_url" class="org-logo-header" alt="org logo" />
             </div>
-            <div class="qr-code-area" #qrCodeEl>
-              <qrcode
-                #qrRef
-                [qrdata]="qrUrl"
-                [width]="280"
-                [errorCorrectionLevel]="'H'"
-                [colorDark]="'#1e1b4b'"
-                [colorLight]="'#ffffff'"
-                [margin]="3">
-              </qrcode>
+
+            <!-- Sub-header -->
+            <div class="sticker-subheader">Accident&nbsp;•&nbsp;Parking Issue&nbsp;•&nbsp;Lost Vehicle</div>
+
+            <!-- Main Body -->
+            <div class="sticker-body">
+              <!-- Left: QR Code -->
+              <div class="sticker-qr-col">
+                <div class="qr-box-sticker">
+                  <qrcode
+                    #qrRef
+                    [qrdata]="qrUrl"
+                    [width]="180"
+                    [errorCorrectionLevel]="'H'"
+                    [colorDark]="'#1a1a2e'"
+                    [colorLight]="'#ffffff'"
+                    [margin]="2">
+                  </qrcode>
+                </div>
+              </div>
+              <!-- Right: Scan Instructions -->
+              <div class="sticker-scan-col">
+                <div class="scan-headline">Scan this QR<br>to help</div>
+                <div class="scan-using-label">Scan using:</div>
+                <div class="scan-apps">
+                  <span>🔍 Google Lens / <strong>Paytm</strong></span>
+                  <span>📱 PhonePe / Any QR Scanner</span>
+                </div>
+                <div class="no-app-note">(No app required)</div>
+              </div>
             </div>
-            <div class="qr-vehicle-info">
-              <div class="plate-tag">{{ vehicle.vehicle_number }}</div>
-              <p class="scan-instruction">📱 Scan karo emergency mein</p>
+
+            <!-- Brand Bar -->
+            <div class="sticker-brand-bar">
+              <div class="brand-left">
+                <ng-container *ngIf="!branding">
+                  <div class="mq-brand-name">MadadQR</div>
+                  <div class="mq-brand-tag">.Madad bas ek scan door</div>
+                </ng-container>
+                <ng-container *ngIf="branding">
+                  <div class="org-brand-wrap">
+                    <img *ngIf="branding.logo_url" [src]="branding.logo_url" class="org-logo-brand" alt="org logo" />
+                    <div>
+                      <div class="org-brand-name">{{ branding.organization_name }}</div>
+                      <div *ngIf="branding.tagline" class="org-brand-tag">{{ branding.tagline }}</div>
+                      <div class="mq-powered">Powered by MadadQR</div>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+              <div class="brand-right">
+                <div class="vehicle-plate-sticker">{{ vehicle?.vehicle_number }}</div>
+              </div>
             </div>
-            <div class="qr-url-display">{{ qrUrl }}</div>
+
+            <!-- Footer -->
+            <div class="sticker-footer">
+              <span>Only for emergency &amp; genuine use</span>
+              <span class="footer-sep">&nbsp;•&nbsp;</span>
+              <span>Misuse may be tracked</span>
+            </div>
           </div>
 
           <div class="qr-actions">
@@ -96,37 +146,63 @@ import { SupabaseService } from '../../services/supabase.service';
     .qr-header p { color: #64748b; font-size: 0.9rem; }
     .qr-card {
       background: #fff;
-      border-radius: 20px;
-      padding: 2rem;
-      text-align: center;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
       margin-bottom: 2rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .qr-card-top { margin-bottom: 1rem; }
-    .qr-brand { font-size: 1.2rem; font-weight: 800; color: #1e1b4b; }
-    .qr-tagline { font-size: 0.78rem; color: #64748b; margin-top: 0.2rem; }
-    .qr-code-area { display: flex; justify-content: center; margin: 1rem 0; }
-    .qr-vehicle-info { margin-top: 1rem; }
-    .plate-tag {
-      display: inline-block;
-      background: #1e293b;
-      color: #fff;
-      border-radius: 8px;
-      padding: 0.4rem 1.2rem;
-      font-family: monospace;
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
+    .sticker-header {
+      background: #c0392b;
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.2rem;
     }
-    .scan-instruction { color: #64748b; font-size: 0.85rem; margin: 0; }
-    .qr-url-display {
-      font-size: 0.7rem;
-      color: #94a3b8;
-      margin-top: 0.75rem;
-      font-family: monospace;
-      word-break: break-all;
+    .emerg-icon { font-size: 1.4rem; }
+    .emerg-title {
+      font-size: 1.1rem; font-weight: 900; color: #fff;
+      letter-spacing: 0.04em; flex: 1;
     }
+    .org-logo-header { max-height: 36px; max-width: 80px; object-fit: contain; border-radius: 4px; background: #fff; padding: 2px; }
+    .sticker-subheader {
+      background: #f1f1f1; color: #333;
+      text-align: center; font-size: 0.82rem; font-weight: 600;
+      padding: 0.4rem 0.75rem; letter-spacing: 0.02em;
+    }
+    .sticker-body { display: flex; gap: 0; padding: 1rem 1rem 0.5rem; }
+    .sticker-qr-col { flex-shrink: 0; margin-right: 1rem; }
+    .qr-box-sticker { background: #fff; border: 1.5px solid #ddd; border-radius: 10px; padding: 6px; display: inline-block; }
+    .sticker-scan-col { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.35rem; }
+    .scan-headline { font-size: 1.25rem; font-weight: 900; color: #1a1a2e; line-height: 1.25; }
+    .scan-using-label { font-size: 0.72rem; color: #555; font-weight: 600; }
+    .scan-apps { display: flex; flex-direction: column; gap: 0.15rem; }
+    .scan-apps span { font-size: 0.76rem; color: #333; }
+    .no-app-note { font-size: 0.73rem; color: #666; margin-top: 0.35rem; }
+    .sticker-brand-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.6rem 1rem; border-top: 1px solid #eee; background: #fafafa;
+    }
+    .brand-left { display: flex; flex-direction: column; gap: 0.1rem; }
+    .mq-brand-name { font-size: 1.1rem; font-weight: 900; color: #2a2a72; }
+    .mq-brand-tag { font-size: 0.7rem; color: #888; }
+    .org-brand-wrap { display: flex; align-items: center; gap: 0.6rem; }
+    .org-logo-brand { max-height: 40px; max-width: 70px; object-fit: contain; }
+    .org-brand-name { font-size: 0.95rem; font-weight: 800; color: #1a1a2e; }
+    .org-brand-tag { font-size: 0.73rem; color: #555; }
+    .mq-powered { font-size: 0.65rem; color: #9ca3af; margin-top: 0.15rem; }
+    .brand-right { text-align: right; }
+    .vehicle-plate-sticker {
+      display: inline-block; background: #1e293b; color: #fff;
+      border-radius: 6px; padding: 0.3rem 0.8rem;
+      font-family: monospace; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.05em;
+    }
+    .sticker-footer {
+      background: #1a1a2e; color: #fff;
+      text-align: center; padding: 0.55rem 1rem;
+      font-size: 0.78rem; font-weight: 600;
+    }
+    .footer-sep { opacity: 0.5; }
     .qr-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
     .btn-primary {
       background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -165,13 +241,24 @@ import { SupabaseService } from '../../services/supabase.service';
 })
 export class QrDisplayComponent implements OnInit {
   vehicle: any = null;
+  branding: any = null;
   loading = true;
   qrUrl = '';
   canShare = false;
 
-  constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private supa: SupabaseService,
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {}
 
   async ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.loading = false;
+      this.cdr.detectChanges();
+      return;
+    }
     this.canShare = !!navigator.share;
     this.cdr.detectChanges();
     const vehicleId = this.route.snapshot.queryParamMap.get('vehicleId') || localStorage.getItem('mq_vehicleId');
@@ -181,6 +268,11 @@ export class QrDisplayComponent implements OnInit {
       const { data } = await this.supa.getVehicleById(vehicleId);
       this.vehicle = data;
       this.qrUrl = `${baseUrl}/v/${vehicleId}`;
+      // Load branding if co-branded vehicle
+      if (data?.branding_id) {
+        const { data: b } = await this.supa.getBrandingById(data.branding_id);
+        this.branding = b;
+      }
       this.cdr.detectChanges();
     } finally {
       this.loading = false;

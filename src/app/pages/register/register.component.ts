@@ -19,7 +19,7 @@ import { environment } from '../../../environments/environment';
           <div class="info-glow"></div>
           <div class="info-brand">🔳 MadadQR</div>
           <h2>Register Your Vehicle</h2>
-          <p>Setup once. Protected forever. Ek baar register karo aur apni gadi safe karo.</p>
+          <p>Set it up once and keep your vehicle contact-ready.</p>
           <ul class="info-list">
             <li>✓ Free QR code generation</li>
             <li>✓ Emergency contact alerts</li>
@@ -27,7 +27,7 @@ import { environment } from '../../../environments/environment';
             <li>✓ Setup in under 2 minutes</li>
           </ul>
           <div class="info-note">
-            🔒 Your details are only used for emergency communication.
+            🔒 Your details are used only for emergency communication.
           </div>
         </div>
 
@@ -35,7 +35,7 @@ import { environment } from '../../../environments/environment';
         <div class="register-form-panel">
           <div class="form-header">
             <h1>Get Your QR Code</h1>
-            <p>Fill in the details below</p>
+            <p>Enter the vehicle and contact details below</p>
           </div>
 
           <!-- Success Card with inline QR (shown after registration) -->
@@ -69,7 +69,7 @@ import { environment } from '../../../environments/environment';
               </div>
             </div>
             <div class="success-actions">
-              <button (click)="registerNext()" class="btn-register-next">➕ Register Next Customer</button>
+              <button (click)="registerNext()" class="btn-register-next">➕ Register Another Vehicle</button>
               <a [routerLink]="['/dashboard']" [queryParams]="{userId: successData.userId}" class="btn-goto-dash">📊 View Dashboard →</a>
             </div>
           </div>
@@ -82,7 +82,7 @@ import { environment } from '../../../environments/environment';
               <div class="section-label">Registration Mode</div>
               <label class="agent-check-wrap">
                 <input type="checkbox" [(ngModel)]="isAgentMode" name="isAgentMode" class="agent-checkbox" />
-                <span class="agent-check-label">🛡️ I'm an Agent (bulk registration)</span>
+                <span class="agent-check-label">🛡️ Agent mode (bulk registration)</span>
               </label>
               <div *ngIf="isAgentMode" class="agent-pin-group">
                 <div class="form-group" style="margin-top:0.75rem; margin-bottom:0;">
@@ -92,6 +92,67 @@ import { environment } from '../../../environments/environment';
                 </div>
                 <div *ngIf="agentPinError" class="pin-error-msg">{{ agentPinError }}</div>
                 <div *ngIf="pinVerified" class="pin-ok-msg">✓ Agent Mode Active</div>
+              </div>
+            </div>
+
+            <!-- User Type Selection -->
+            <div class="form-section type-section">
+              <div class="section-label">Registration Type</div>
+              <div class="type-picker">
+                <label class="type-option" [class.type-active]="userType==='individual'">
+                  <input type="radio" name="userType" [(ngModel)]="userType" value="individual" />
+                  <span class="type-icon">👤</span>
+                  <div>
+                    <div class="type-label">Individual</div>
+                    <div class="type-desc">Personal vehicle</div>
+                  </div>
+                </label>
+                <label class="type-option" [class.type-active]="userType==='branding'">
+                  <input type="radio" name="userType" [(ngModel)]="userType" value="branding" />
+                  <span class="type-icon">🏢</span>
+                  <div>
+                    <div class="type-label">Business or School</div>
+                    <div class="type-desc">Branded QR sticker</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Branding Details -->
+            <div *ngIf="userType === 'branding'" class="form-section branding-section">
+              <div class="section-label">🏢 Organization Branding</div>
+              <div class="form-group">
+                <label>Organization Name <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="form.organizationName" name="organizationName"
+                  [required]="userType === 'branding'" class="form-input"
+                  placeholder="e.g. ABC School / XYZ Logistics" />
+              </div>
+              <div class="form-group">
+                <label>Organization Type</label>
+                <select [(ngModel)]="form.brandingType" name="brandingType" class="form-input">
+                  <option value="">Select type</option>
+                  <option value="School">School</option>
+                  <option value="Business">Business</option>
+                  <option value="Fleet">Fleet</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Logo <span class="optional-tag">optional</span></label>
+                <input type="file" (change)="onLogoSelected($event)" accept="image/*" class="form-input file-input" />
+                <div *ngIf="form.logoPreviewUrl" class="logo-preview">
+                  <img [src]="form.logoPreviewUrl" alt="Logo preview" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Tagline <span class="optional-tag">optional</span></label>
+                <input type="text" [(ngModel)]="form.tagline" name="tagline" class="form-input"
+                  placeholder="e.g. Safety First" maxlength="60" />
+              </div>
+              <div class="form-group">
+                <label>Ad Text <span class="optional-tag">optional</span></label>
+                <input type="text" [(ngModel)]="form.adText" name="adText" class="form-input"
+                  placeholder="e.g. Reliable Transport Partner" maxlength="80" />
               </div>
             </div>
 
@@ -117,18 +178,26 @@ import { environment } from '../../../environments/environment';
             <!-- Vehicle Info -->
             <div class="form-section">
               <div class="section-label">Vehicle Information</div>
-              <div class="form-group">
+              <div *ngIf="userType === 'individual'" class="form-group">
                 <label>Vehicle Number <span class="required">*</span></label>
-                <input type="text" [(ngModel)]="form.vehicleNumber" name="vehicleNumber" required
+                <input type="text" [(ngModel)]="form.vehicleNumber" name="vehicleNumber"
+                  [required]="userType === 'individual'"
                   placeholder="e.g. MH 12 AB 1234" class="form-input uppercase"
                   (input)="toUpperCase($event)" />
+              </div>
+              <div *ngIf="userType === 'branding'" class="form-group">
+                <label>Vehicle Numbers <span class="required">*</span> <span class="optional-tag">comma separated</span></label>
+                <textarea [(ngModel)]="form.vehicleNumbers" name="vehicleNumbers"
+                  [required]="userType === 'branding'" class="form-input"
+                  placeholder="e.g. MH12AB1234, MH12CD5678, GJ01XY9999" rows="3"></textarea>
+                <p class="section-hint">Enter each vehicle number separated by a comma</p>
               </div>
             </div>
 
             <!-- Emergency Contacts -->
             <div class="form-section">
               <div class="section-label">Emergency Contacts</div>
-              <p class="section-hint">Inhe emergency alert bheja jayega</p>
+              <p class="section-hint">These contacts will receive emergency alerts</p>
               <div class="emergency-contact" *ngFor="let c of form.emergencyContacts; let i = index">
                 <div class="ec-header">Contact {{ i + 1 }}</div>
                 <div class="ec-fields">
@@ -150,8 +219,26 @@ import { environment } from '../../../environments/environment';
               </div>
             </div>
 
-            <button type="submit" class="btn-submit" [disabled]="loading || !regForm.form.valid">
-              <span *ngIf="!loading">Generate My QR Code 🔳</span>
+            <!-- Consent & Terms -->
+            <div class="form-section consent-section">
+              <label class="consent-label">
+                <input type="checkbox" [(ngModel)]="consentGiven" name="consentGiven" required />
+                <span>I agree to the <a href="#" (click)="$event.preventDefault(); showConsent = !showConsent" style="color:#6366f1;text-decoration:underline;">Terms and Conditions</a></span>
+              </label>
+              <div *ngIf="showConsent" class="consent-messages">
+                <ul>
+                  <li>By registering, you agree that your details will be used only for emergency communication.</li>
+                  <li>Your personal information (name and mobile number) will not be shared publicly or sold to third parties.</li>
+                  <li>MadadQR is a facilitation tool for emergency situations.</li>
+                  <li>MadadQR is not responsible for any misuse of the platform by users or third parties.</li>
+                  <li>Use the service only for genuine emergency purposes.</li>
+                  <li>Misuse of this service may be tracked and reported.</li>
+                </ul>
+                <div class="consent-basic-rule"><strong>Basic Rule:</strong> Use responsibly and protect user data.</div>
+              </div>
+            </div>
+            <button type="submit" class="btn-submit" [disabled]="loading || !regForm.form.valid || !consentGiven">
+              <span *ngIf="!loading">{{ userType === 'branding' ? '🏢 Register with Branding 🔳' : 'Generate My QR Code 🔳' }}</span>
               <span *ngIf="loading" class="loading-spinner">Registering…</span>
             </button>
           </form>
@@ -337,6 +424,47 @@ import { environment } from '../../../environments/environment';
     .agent-pin-group {}
     .pin-error-msg { color: #f87171; font-size: 0.78rem; margin-top: 0.4rem; }
     .pin-ok-msg { color: #4ade80; font-size: 0.78rem; margin-top: 0.4rem; font-weight: 600; }
+    .type-section { }
+    .type-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .type-option {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 0.9rem 1rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .type-option input[type="radio"] { display: none; }
+    .type-option:hover { border-color: rgba(99,102,241,0.4); }
+    .type-option.type-active {
+      border-color: #6366f1; background: rgba(99,102,241,0.1);
+      box-shadow: 0 0 0 1px rgba(99,102,241,0.3);
+    }
+    .type-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .type-label { color: #e2e8f0; font-size: 0.88rem; font-weight: 700; }
+    .type-desc { color: #64748b; font-size: 0.75rem; margin-top: 0.1rem; }
+    .branding-section {
+      background: rgba(99,102,241,0.04);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 14px; padding: 1.25rem 1.25rem 0.5rem;
+    }
+    .optional-tag {
+      background: rgba(99,102,241,0.12); color: #a78bfa;
+      font-size: 0.7rem; font-weight: 600; border-radius: 6px;
+      padding: 0.15rem 0.45rem; margin-left: 0.35rem;
+    }
+    .file-input { padding: 0.5rem 0.9rem; cursor: pointer; }
+    .logo-preview { margin-top: 0.75rem; background: #fff; display: inline-block; border-radius: 8px; padding: 0.4rem; }
+    .logo-preview img { max-width: 140px; max-height: 70px; display: block; object-fit: contain; }
+    .consent-section { margin-top: 0.5rem; }
+    .consent-label { display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; color: #94a3b8; font-size: 0.85rem; }
+    .consent-label input { margin-top: 2px; accent-color: #6366f1; flex-shrink: 0; }
+    .consent-messages {
+      margin-top: 0.75rem; background: rgba(99,102,241,0.06);
+      border: 1px solid rgba(99,102,241,0.15); border-radius: 10px; padding: 0.9rem 1rem;
+    }
+    .consent-messages ul { margin: 0 0 0.6rem; padding-left: 1.2rem; }
+    .consent-messages li { color: #94a3b8; font-size: 0.8rem; line-height: 1.7; }
+    .consent-basic-rule { color: #a78bfa; font-size: 0.78rem; }
+    form textarea.form-input { resize: vertical; min-height: 72px; }
     @media (max-width: 768px) {
       .register-container { grid-template-columns: 1fr; }
       .register-info { display: none; }
@@ -346,6 +474,10 @@ import { environment } from '../../../environments/environment';
   `]
 })
 export class RegisterComponent {
+  consentGiven = false;
+  showConsent = false;
+  userType: 'individual' | 'branding' = 'individual';
+
   form = {
     name: '',
     mobile: '',
@@ -353,13 +485,23 @@ export class RegisterComponent {
     emergencyContacts: [
       { name: '', mobile: '' },
       { name: '', mobile: '' }
-    ]
+    ],
+    organizationName: '',
+    logoFile: null as File | null,
+    logoPreviewUrl: '',
+    tagline: '',
+    adText: '',
+    brandingType: '',
+    vehicleNumbers: ''
   };
+
   loading = false;
   errorMsg = '';
-  successData: { userId: string; vehicleId: string; name: string; vehicleNumber: string; qrUrl: string } | null = null;
+  successData: {
+    userId: string; vehicleId: string; name: string;
+    vehicleNumber: string; qrUrl: string; orgName?: string;
+  } | null = null;
 
-  // Agent mode
   isAgentMode = false;
   agentPinInput = '';
   agentPinError = '';
@@ -375,6 +517,19 @@ export class RegisterComponent {
     this.form.vehicleNumber = input.value;
   }
 
+  onLogoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.form.logoFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.form.logoPreviewUrl = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
   downloadQR() {
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     if (!canvas) return;
@@ -388,24 +543,23 @@ export class RegisterComponent {
     this.successData = null;
     this.errorMsg = '';
     this.form = {
-      name: '',
-      mobile: '',
-      vehicleNumber: '',
-      emergencyContacts: [{ name: '', mobile: '' }, { name: '', mobile: '' }]
+      name: '', mobile: '', vehicleNumber: '',
+      emergencyContacts: [{ name: '', mobile: '' }, { name: '', mobile: '' }],
+      organizationName: '', logoFile: null, logoPreviewUrl: '',
+      tagline: '', adText: '', brandingType: '', vehicleNumbers: ''
     };
-    // Keep agent mode & verified PIN for the next customer
     this.cdr.detectChanges();
   }
 
   async onSubmit() {
-    // Validate agent PIN before making any API calls
+    if (!this.consentGiven) {
+      this.errorMsg = 'Please agree to the Terms and Conditions to register.';
+      return;
+    }
     if (this.isAgentMode) {
-      if (!this.agentPinInput.trim()) {
-        this.agentPinError = 'Please enter the Agent PIN.';
-        return;
-      }
+      if (!this.agentPinInput.trim()) { this.agentPinError = 'Please enter the Agent PIN.'; return; }
       if (this.agentPinInput.trim() !== environment.agentPin) {
-        this.agentPinError = 'Incorrect Agent PIN. Please check and try again.';
+        this.agentPinError = 'Incorrect Agent PIN.';
         this.pinVerified = false;
         this.cdr.detectChanges();
         return;
@@ -413,68 +567,93 @@ export class RegisterComponent {
       this.pinVerified = true;
       this.agentPinError = '';
     }
+    if (this.userType === 'branding' && !this.form.organizationName.trim()) {
+      this.errorMsg = 'Organization name is required for branding registration.';
+      return;
+    }
     this.loading = true;
     this.errorMsg = '';
     this.cdr.detectChanges();
-    console.log('[Register] Submit started', this.form);
+
     try {
-      // Create user
-      console.log('[Register] Creating user...');
+      // 1. Create user
       const { data: user, error: userErr } = await this.supa.createUser({
-        name: this.form.name.trim(),
-        mobile: this.form.mobile.trim()
+        name: this.form.name.trim(), mobile: this.form.mobile.trim()
       });
-      console.log('[Register] User create result:', { user, userErr });
-      if (userErr) throw new Error(userErr.message);
-      if (!user || !user.id) throw new Error('User creation failed, no user ID returned');
+      if (userErr) throw new Error((userErr as any)?.message || 'User creation failed');
+      if (!user?.id) throw new Error('User creation failed');
 
-      // Create vehicle
-      console.log('[Register] Creating vehicle...');
-      const { data: vehicle, error: vErr } = await this.supa.createVehicle({
-        user_id: user.id,
-        vehicle_number: this.form.vehicleNumber.trim().toUpperCase()
-      });
-      console.log('[Register] Vehicle create result:', { vehicle, vErr });
-      if (vErr) throw new Error(vErr.message);
-      if (!vehicle || !vehicle.id) throw new Error('Vehicle creation failed, no vehicle ID returned');
-
-      // Save emergency contacts
-      const validContacts = this.form.emergencyContacts.filter(c => c.mobile?.trim());
-      if (validContacts.length > 0) {
-        console.log('[Register] Saving emergency contacts:', validContacts);
-        await this.supa.upsertEmergencyContacts(vehicle.id, validContacts);
-        console.log('[Register] Emergency contacts saved');
+      // 2. Upload logo to Supabase Storage (if branding + logo provided)
+      //    Naming convention: logos/org-{slug}-{timestamp}.{ext}
+      let logoPath = '';
+      let logoUrl = '';
+      if (this.userType === 'branding' && this.form.logoFile) {
+        const logoResult = await this.supa.uploadLogo(this.form.logoFile, this.form.organizationName);
+        if (!logoResult.error) { logoPath = logoResult.path; logoUrl = logoResult.url; }
       }
 
-      // Store session info using multi-session tracking
+      // 3. Create branding record (if branding type)
+      let brandingId: string | undefined;
+      if (this.userType === 'branding') {
+        const { data: branding, error: bErr } = await this.supa.createBranding({
+          user_id: user.id,
+          organization_name: this.form.organizationName.trim(),
+          branding_type: this.form.brandingType || undefined,
+          logo_path: logoPath || undefined,
+          logo_url: logoUrl || undefined,
+          tagline: this.form.tagline.trim() || undefined,
+          ad_text: this.form.adText.trim() || undefined
+        });
+        if (bErr) throw new Error((bErr as any)?.message || 'Branding creation failed');
+        brandingId = branding?.id;
+      }
+
+      // 4. Parse vehicle numbers (bulk for branding, single for individual)
+      const vehicleNums = this.userType === 'branding' && this.form.vehicleNumbers.trim()
+        ? this.form.vehicleNumbers.split(',').map(v => v.trim().toUpperCase()).filter(v => v)
+        : [this.form.vehicleNumber.trim().toUpperCase()];
+
+      // 5. Create primary vehicle
+      const { data: vehicle, error: vErr } = await this.supa.createVehicle({
+        user_id: user.id, vehicle_number: vehicleNums[0],
+        user_type: this.userType, branding_id: brandingId
+      });
+      if (vErr) throw new Error((vErr as any)?.message || 'Vehicle creation failed');
+      if (!vehicle?.id) throw new Error('Vehicle creation failed');
+
+      // 6. Create additional vehicles for bulk branding
+      for (let i = 1; i < vehicleNums.length; i++) {
+        await this.supa.createVehicle({
+          user_id: user.id, vehicle_number: vehicleNums[i],
+          user_type: this.userType, branding_id: brandingId
+        });
+      }
+
+      // 7. Save emergency contacts (linked to primary vehicle)
+      const validContacts = this.form.emergencyContacts.filter(c => c.mobile?.trim());
+      if (validContacts.length > 0) {
+        await this.supa.upsertEmergencyContacts(vehicle.id, validContacts);
+      }
+
       const qrUrl = `${this.BASE_URL}/v/${vehicle.id}`;
       this.supa.addRegistrationSession({
-        userId: user.id,
-        vehicleId: vehicle.id,
-        name: this.form.name.trim(),
-        vehicleNumber: this.form.vehicleNumber.trim().toUpperCase()
+        userId: user.id, vehicleId: vehicle.id,
+        name: this.form.name.trim(), vehicleNumber: vehicleNums[0]
       });
-
-      // Store role so dashboard knows if this is an agent session
       localStorage.setItem('mq_role', this.isAgentMode ? 'agent' : 'customer');
 
       this.successData = {
-        userId: user.id,
-        vehicleId: vehicle.id,
-        name: this.form.name.trim(),
-        vehicleNumber: this.form.vehicleNumber.trim().toUpperCase(),
-        qrUrl
+        userId: user.id, vehicleId: vehicle.id,
+        name: this.form.name.trim(), vehicleNumber: vehicleNums[0], qrUrl,
+        orgName: this.userType === 'branding' ? this.form.organizationName.trim() : undefined
       };
       this.cdr.detectChanges();
-      console.log('[Register] Registration successful', this.successData);
     } catch (err: any) {
-      console.error('[Register] Registration error:', err);
       this.errorMsg = err.message || 'Something went wrong. Please try again.';
       this.cdr.detectChanges();
     } finally {
       this.loading = false;
       this.cdr.detectChanges();
-      console.log('[Register] Submit finished, loading:', this.loading);
     }
   }
 }

@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { SupabaseService } from '../../services/supabase.service';
 
 type ActionType = 'emergency' | 'parking' | null;
@@ -44,58 +45,48 @@ type ActionType = 'emergency' | 'parking' | null;
         </div>
 
         <!-- Action Buttons -->
-        <div class="action-buttons">
+        <div class="action-grid">
 
           <!-- Emergency -->
           <button class="action-btn btn-emergency" (click)="triggerAction('emergency')">
             <span class="btn-icon">🚨</span>
-            <div class="btn-text">
-              <span class="btn-title">Report Emergency</span>
-              <span class="btn-desc">Alert owner & emergency contacts</span>
-            </div>
+            <span class="btn-title">Report Emergency</span>
+            <span class="btn-desc">Alert owner and contacts</span>
           </button>
 
           <!-- Call Owner -->
           <a [href]="'tel:+91' + ownerMobile" class="action-btn btn-call">
             <span class="btn-icon">📞</span>
-            <div class="btn-text">
-              <span class="btn-title">Call Owner</span>
-              <span class="btn-desc">Direct call — turant connect karo</span>
-            </div>
+            <span class="btn-title">Call Owner</span>
+            <span class="btn-desc">Direct voice call</span>
           </a>
 
           <!-- SMS Owner -->
           <a [href]="smsUrl" class="action-btn btn-sms">
             <span class="btn-icon">💬</span>
-            <div class="btn-text">
-              <span class="btn-title">Send SMS</span>
-              <span class="btn-desc">Text message bhejo owner ko</span>
-            </div>
+            <span class="btn-title">Send SMS</span>
+            <span class="btn-desc">Share a quick message</span>
           </a>
 
           <!-- Parking Issue -->
           <button class="action-btn btn-parking" (click)="triggerAction('parking')">
             <span class="btn-icon">🚗</span>
-            <div class="btn-text">
-              <span class="btn-title">Parking Issue</span>
-              <span class="btn-desc">Gaadi raste mein hai</span>
-            </div>
+            <span class="btn-title">Parking Issue</span>
+            <span class="btn-desc">Vehicle needs moving</span>
           </button>
 
           <!-- WhatsApp -->
           <a [href]="whatsappUrl" target="_blank" class="action-btn btn-whatsapp">
             <span class="btn-icon">🟢</span>
-            <div class="btn-text">
-              <span class="btn-title">WhatsApp Owner</span>
-              <span class="btn-desc">Quick message bhejo</span>
-            </div>
+            <span class="btn-title">WhatsApp Owner</span>
+            <span class="btn-desc">Send a quick WhatsApp message</span>
           </a>
 
         </div>
 
         <!-- Footer brand -->
         <div class="scan-footer">
-          <p>Powered by <strong>MadadQR</strong> — Madad bas ek scan door</p>
+          <p>Powered by <strong>MadadQR</strong></p>
           <a href="/" class="register-link">Register your vehicle →</a>
         </div>
 
@@ -206,19 +197,21 @@ type ActionType = 'emergency' | 'parking' | null;
     }
     .owner-name { color: #94a3b8; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
     .scan-note { color: #475569; font-size: 0.78rem; }
-    .action-buttons { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem; }
+    .action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; margin-bottom: 2rem; }
     .action-btn {
       display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      border-radius: 14px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 1rem;
+      border-radius: 18px;
       border: none;
       cursor: pointer;
       text-decoration: none;
       transition: all 0.2s;
       text-align: left;
       width: 100%;
+      min-height: 128px;
     }
     .action-btn:hover { transform: translateY(-2px); }
     .btn-emergency { background: linear-gradient(135deg, #dc2626, #ef4444); color: #fff; box-shadow: 0 4px 20px rgba(220,38,38,0.3); }
@@ -227,13 +220,15 @@ type ActionType = 'emergency' | 'parking' | null;
     .btn-parking { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; box-shadow: 0 4px 20px rgba(217,119,6,0.3); }
     .btn-whatsapp { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; box-shadow: 0 4px 20px rgba(22,163,74,0.3); }
     .btn-icon { font-size: 1.75rem; flex-shrink: 0; }
-    .btn-text { display: flex; flex-direction: column; gap: 0.15rem; }
     .btn-title { font-size: 1rem; font-weight: 700; }
     .btn-desc { font-size: 0.78rem; opacity: 0.85; }
     .scan-footer { text-align: center; }
     .scan-footer p { color: #334155; font-size: 0.8rem; margin-bottom: 0.4rem; }
     .scan-footer strong { color: #475569; }
     .register-link { color: #6366f1; font-size: 0.82rem; text-decoration: none; font-weight: 600; }
+    @media (max-width: 480px) {
+      .action-grid { grid-template-columns: 1fr; }
+    }
 
     /* Modal */
     .modal-overlay {
@@ -306,9 +301,19 @@ export class ScanComponent implements OnInit {
   whatsappUrl = '';
   smsUrl = '';
 
-  constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private supa: SupabaseService,
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {}
 
   async ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.loading = false;
+      this.cdr.detectChanges();
+      return;
+    }
     const vehicleId = this.route.snapshot.paramMap.get('vehicleId');
     if (!vehicleId) { this.loading = false; this.cdr.detectChanges(); return; }
     try {

@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { SupabaseService } from '../../services/supabase.service';
 
@@ -8,7 +9,7 @@ const BASE_URL = 'https://madad-qr.vercel.app';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, QRCodeComponent],
+  imports: [CommonModule, RouterLink, QRCodeComponent, MatIconModule],
   template: `
     <div class="dashboard-page">
       <div class="dash-container">
@@ -110,7 +111,7 @@ const BASE_URL = 'https://madad-qr.vercel.app';
               <span class="card-icon">🔳</span>
               <h3>Your MadadQR Code</h3>
             </div>
-            <p class="qr-hint">Print aur apni gaadi par chipkaye</p>
+              <p class="qr-hint">Print the QR and place it on your vehicle</p>
             <div class="qr-wrapper" #qrWrapper>
               <qrcode
                 [qrdata]="qrUrl"
@@ -127,7 +128,7 @@ const BASE_URL = 'https://madad-qr.vercel.app';
                 🔍 View Full QR
               </a>
               <a [href]="scanUrl" target="_blank" class="btn-qr btn-outline">
-                🔗 Test Scan Page
+                  🔗 Open Scan Page
               </a>
             </div>
           </div>
@@ -139,23 +140,31 @@ const BASE_URL = 'https://madad-qr.vercel.app';
           <h3>Quick Actions</h3>
           <div class="action-grid">
             <a [routerLink]="['/qr']" [queryParams]="{vehicleId: vehicle.id}" class="action-card">
-              <span class="action-icon">📥</span>
+              <span class="action-icon"><mat-icon>qr_code</mat-icon></span>
               <span>Download QR</span>
             </a>
             <a [routerLink]="['/edit-profile']" [queryParams]="{vehicleId: vehicle.id}" class="action-card">
-              <span class="action-icon">✏️</span>
+              <span class="action-icon"><mat-icon>edit</mat-icon></span>
               <span>Edit Profile</span>
             </a>
             <a routerLink="/scan-qr" class="action-card">
-              <span class="action-icon">🔍</span>
-              <span>Scan a QR</span>
+              <span class="action-icon action-icon-scan">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 8V4a1 1 0 0 1 1-1h4"/>
+                  <path d="M21 8V4a1 1 0 0 0-1-1h-4"/>
+                  <path d="M3 16v4a1 1 0 0 0 1 1h4"/>
+                  <path d="M21 16v4a1 1 0 0 1-1 1h-4"/>
+                  <path d="M2 12h20"/>
+                </svg>
+              </span>
+              <span>Scan QR</span>
             </a>
             <a [href]="scanUrl" target="_blank" class="action-card">
-              <span class="action-icon">👁️</span>
-              <span>Preview Scan Page</span>
+              <span class="action-icon"><mat-icon>visibility</mat-icon></span>
+              <span>Open Scan Page</span>
             </a>
             <a routerLink="/register" class="action-card">
-              <span class="action-icon">➕</span>
+              <span class="action-icon"><mat-icon>add_circle</mat-icon></span>
               <span>Add Vehicle</span>
             </a>
           </div>
@@ -347,10 +356,17 @@ const BASE_URL = 'https://madad-qr.vercel.app';
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      .action-icon-scan {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .action-icon-scan svg { display: block; width: 22px; height: 22px; }
       transition: all 0.2s;
     }
     .action-card:hover { background: rgba(99,102,241,0.06); border-color: rgba(99,102,241,0.35); transform: translateY(-2px); }
-    .action-icon { font-size: 1.5rem; }
+    .action-icon { display: inline-flex; align-items: center; justify-content: center; }
+    .action-icon mat-icon { width: 24px; height: 24px; font-size: 24px; line-height: 24px; }
     .action-card span:last-child { color: #94a3b8; font-size: 0.82rem; font-weight: 600; }
     @media (max-width: 1024px) {
       .dash-grid { grid-template-columns: 1fr 1fr; }
@@ -373,9 +389,20 @@ export class DashboardComponent implements OnInit {
   qrUrl = '';
   scanUrl = '';
 
-  constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private supa: SupabaseService,
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {}
 
   async ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.loading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
     // Load session list (agent multi-registration support)
     this.sessions = this.supa.getRegistrationSessions();
     this.isAgent = localStorage.getItem('mq_role') === 'agent';

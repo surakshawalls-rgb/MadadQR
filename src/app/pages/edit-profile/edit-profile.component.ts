@@ -1,7 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
@@ -212,9 +213,19 @@ export class EditProfileComponent implements OnInit {
   successMsg = '';
   errorMsg = '';
 
-  constructor(private supa: SupabaseService, private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private supa: SupabaseService,
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {}
 
   async ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.loading = false;
+      this.cdr.detectChanges();
+      return;
+    }
     this.vehicleId = this.route.snapshot.queryParamMap.get('vehicleId') || localStorage.getItem('mq_vehicleId') || '';
     if (!this.vehicleId) { this.loading = false; this.cdr.detectChanges(); return; }
     try {

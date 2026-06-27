@@ -159,7 +159,7 @@ export class LoginComponent {
     this.cdr.detectChanges();
     try {
       const { data: user, error } = await this.supa.getUserByMobile(this.mobile.trim());
-      if (error) throw new Error(error.message);
+      if (error) throw new Error((error as any)?.message || 'Login lookup failed.');
       if (!user) {
         this.errorMsg = 'No account found for this mobile number. Please register first.';
         return;
