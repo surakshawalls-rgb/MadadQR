@@ -30,8 +30,9 @@ type VehicleRow = {
 
         <div class="av-header">
           <div>
-            <h1>All Registered Vehicles</h1>
-            <p>{{ vehicles.length }} vehicles registered on MadadQR</p>
+            <span class="eyebrow">Vehicle directory</span>
+            <h1>Registered Vehicles</h1>
+            <p>Find vehicles, review owner details, and manage QR records from one place.</p>
           </div>
           <a routerLink="/dashboard" class="btn-back">← Back to Dashboard</a>
         </div>
@@ -39,12 +40,21 @@ type VehicleRow = {
         <!-- Loading -->
         <div *ngIf="loading" class="loading-state">
           <div class="spinner"></div>
-          <p>Loading vehicles…</p>
+          <strong>Preparing your vehicle directory</strong>
+          <div class="load-track" role="progressbar" [attr.aria-valuenow]="loadingProgress" aria-valuemin="0" aria-valuemax="100"><span [style.width.%]="loadingProgress"></span></div>
+          <small>{{ loadingProgress }}% complete</small>
+          <p>{{ loadingMessage }}</p>
         </div>
 
         <!-- Error -->
         <div *ngIf="errorMsg && !loading" class="error-card">
           <p>{{ errorMsg }}</p>
+        </div>
+
+        <div *ngIf="!loading && vehicles.length > 0" class="summary-grid">
+          <div class="summary-card"><span>Total vehicles</span><strong>{{ vehicles.length }}</strong><small>Registered records</small></div>
+          <div class="summary-card"><span>Emergency-ready</span><strong>{{ vehiclesWithContacts }}</strong><small>With emergency contacts</small></div>
+          <div class="summary-card"><span>Added this month</span><strong>{{ vehiclesAddedThisMonth }}</strong><small>New registrations</small></div>
         </div>
 
         <!-- Search -->
@@ -57,6 +67,7 @@ type VehicleRow = {
             class="search-input"
           />
           <span class="search-count">{{ filtered.length }} results</span>
+          <a routerLink="/register" class="btn-add">+ Register vehicle</a>
         </div>
 
         <!-- Table -->
@@ -124,12 +135,19 @@ type VehicleRow = {
           No vehicles match your search.
         </div>
 
+        <div *ngIf="!loading && vehicles.length === 0 && !errorMsg" class="empty-msg empty-state-card">
+          <mat-icon>directions_car</mat-icon>
+          <strong>No vehicles registered yet</strong>
+          <p>Register your first vehicle to create its MadadQR code.</p>
+          <a routerLink="/register">Register a vehicle</a>
+        </div>
+
       </div>
     </div>
   `,
   styles: [`
     .av-page { background: #0a0a14; min-height: calc(100vh - 64px); padding: 2.5rem 1.5rem; }
-    .av-container { max-width: 1100px; margin: 0 auto; }
+    .av-container { max-width: 1180px; margin: 0 auto; }
     .av-header {
       display: flex;
       align-items: flex-start;
@@ -138,8 +156,9 @@ type VehicleRow = {
       margin-bottom: 2rem;
       flex-wrap: wrap;
     }
-    .av-header h1 { color: #fff; font-size: 1.8rem; font-weight: 800; margin: 0 0 0.25rem; }
-    .av-header p { color: #64748b; font-size: 0.9rem; margin: 0; }
+    .eyebrow { display: block; color: #818cf8; font-size: .72rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; margin-bottom: .45rem; }
+    .av-header h1 { color: #fff; font-size: clamp(1.8rem, 4vw, 2.35rem); font-weight: 850; letter-spacing: -.035em; margin: 0 0 0.4rem; }
+    .av-header p { color: #94a3b8; font-size: 0.92rem; margin: 0; max-width: 620px; }
     .btn-back {
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.1);
@@ -153,7 +172,8 @@ type VehicleRow = {
       transition: all 0.2s;
     }
     .btn-back:hover { border-color: rgba(99,102,241,0.4); color: #fff; }
-    .loading-state { text-align: center; padding: 4rem; }
+    .btn-add { background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; padding: .58rem 1rem; border-radius: 10px; text-decoration: none; font-size: .85rem; font-weight: 750; box-shadow: 0 8px 24px rgba(99,102,241,.22); white-space: nowrap; }
+    .loading-state { text-align: center; padding: 4rem 2rem; border: 1px solid rgba(99,102,241,.14); border-radius: 18px; background: rgba(255,255,255,.018); }
     .spinner {
       width: 40px; height: 40px;
       border: 3px solid rgba(99,102,241,0.2);
@@ -164,6 +184,10 @@ type VehicleRow = {
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-state p { color: #64748b; }
+    .loading-state strong { display: block; color: #e2e8f0; margin-bottom: .35rem; }
+    .loading-state small { display: block; color: #475569; margin-top: .55rem; font-size: .72rem; }
+    .load-track { max-width: 420px; height: 5px; margin: 1rem auto 0; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.07); }
+    .load-track span { display: block; height: 100%; min-width: 4%; border-radius: inherit; background: linear-gradient(90deg,#6366f1,#a78bfa); transition: width .3s ease; }
     .error-card {
       background: rgba(248,113,113,0.08);
       border: 1px solid rgba(248,113,113,0.2);
@@ -172,11 +196,17 @@ type VehicleRow = {
       text-align: center;
       color: #f87171;
     }
+    .summary-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .85rem; margin-bottom: 1.25rem; }
+    .summary-card { padding: 1.15rem 1.25rem; border: 1px solid rgba(99,102,241,.14); border-radius: 14px; background: linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012)); }
+    .summary-card span { display: block; color: #94a3b8; font-size: .78rem; font-weight: 650; }
+    .summary-card strong { display: block; color: #fff; font-size: 1.75rem; line-height: 1.25; margin: .2rem 0; }
+    .summary-card small { color: #475569; font-size: .72rem; }
     .search-bar {
       display: flex;
       align-items: center;
       gap: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem; padding: .75rem;
+      background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.06); border-radius: 14px;
     }
     .search-input {
       flex: 1;
@@ -308,10 +338,16 @@ type VehicleRow = {
     .action-edit { color: #60a5fa; }
     .action-view { color: #34d399; }
     .action-delete { color: #f87171; }
-    .empty-msg { color: #475569; text-align: center; padding: 3rem; }
+    .empty-msg { color: #64748b; text-align: center; padding: 3rem 1rem; border: 1px dashed rgba(99,102,241,.2); border-radius: 16px; }
+    .empty-state-card mat-icon { display: block; width: 36px; height: 36px; font-size: 36px; margin: 0 auto .75rem; color: #818cf8; }
+    .empty-state-card strong { display: block; color: #e2e8f0; }
+    .empty-state-card p { margin: .35rem 0 1rem; font-size: .84rem; }
+    .empty-state-card a { display: inline-block; color: #fff; background: linear-gradient(135deg,#6366f1,#8b5cf6); padding: .6rem 1rem; border-radius: 9px; text-decoration: none; font-weight: 700; }
     @media (max-width: 640px) {
       .av-header { flex-direction: column; }
+      .summary-grid { grid-template-columns: 1fr; }
       .search-bar { flex-direction: column; align-items: stretch; }
+      .btn-add { text-align: center; min-height: 44px; display: grid; place-items: center; }
       .search-count { align-self: flex-start; }
       .table-wrap {
         border: none;
@@ -404,6 +440,8 @@ export class AllVehiclesComponent implements OnInit {
   filtered: VehicleRow[] = [];
   searchQuery = '';
   loading = true;
+  loadingProgress = 8;
+  loadingMessage = 'Connecting securely to MadadQR...';
   errorMsg = '';
 
   constructor(
@@ -440,6 +478,18 @@ export class AllVehiclesComponent implements OnInit {
     return this.getContactList(vehicle)[0] || null;
   }
 
+  get vehiclesWithContacts() {
+    return this.vehicles.filter(vehicle => this.getEmergencyContacts(vehicle).length > 0).length;
+  }
+
+  get vehiclesAddedThisMonth() {
+    const now = new Date();
+    return this.vehicles.filter(vehicle => {
+      const date = new Date(vehicle.created_at || vehicle.users?.created_at || '');
+      return !Number.isNaN(date.getTime()) && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    }).length;
+  }
+
   openEmergencyDialog(vehicle: VehicleRow) {
     const contacts = this.getContactList(vehicle);
     const dialogData: VehicleEmergencyDialogData = {
@@ -465,17 +515,27 @@ export class AllVehiclesComponent implements OnInit {
       return;
     }
     try {
+      this.loadingProgress = 18;
+      this.loadingMessage = 'Loading registered vehicle records...';
       const { data, error } = await this.supa.getAllVehiclesWithOwners();
       if (error) throw new Error((error as any)?.message || 'Failed to load vehicles.');
       const rawVehicles = (data || []) as VehicleRow[];
+      this.loadingProgress = 42;
+      this.loadingMessage = rawVehicles.length ? 'Checking emergency contact coverage...' : 'Finishing up...';
+      let completed = 0;
       const rows = await Promise.all(
         rawVehicles.map(async vehicle => {
           const { data: contacts } = await this.supa.getEmergencyContacts(vehicle.id);
+          completed++;
+          this.loadingProgress = 42 + Math.round((completed / rawVehicles.length) * 50);
+          this.cdr.detectChanges();
           return { ...vehicle, emergencyContacts: contacts || [] };
         })
       );
       this.vehicles = rows;
       this.filtered = [...this.vehicles];
+      this.loadingProgress = 100;
+      this.loadingMessage = 'Your vehicle directory is ready.';
     } catch (err: any) {
       this.errorMsg = err.message || 'Failed to load vehicles.';
     } finally {

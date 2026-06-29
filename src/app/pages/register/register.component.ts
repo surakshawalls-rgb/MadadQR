@@ -471,6 +471,16 @@ import { environment } from '../../../environments/environment';
       .register-form-panel { padding: 2rem 1.5rem; }
       .ec-fields { grid-template-columns: 1fr; }
     }
+    @media (max-width: 480px) {
+      .register-page { padding: 1rem; align-items: flex-start; }
+      .register-container { border-radius: 18px; }
+      .register-form-panel { padding: 1.5rem 1rem; }
+      .form-header { text-align: center; margin-bottom: 1.5rem; }
+      .qr-preview { flex-direction: column; align-items: center; text-align: center; }
+      .qr-info { width: 100%; }
+      .qr-btns, .success-actions { justify-content: center; }
+      .success-card { padding: 1rem; }
+    }
   `]
 })
 export class RegisterComponent {

@@ -339,6 +339,15 @@ type ScanState = 'idle' | 'scanning' | 'success' | 'error' | 'nocamera';
     .tip-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
     .tip-card strong { display: block; color: #cbd5e1; font-size: 0.88rem; margin-bottom: 0.2rem; }
     .tip-card p { color: #475569; font-size: 0.8rem; line-height: 1.5; margin: 0; }
+    @media (max-width: 480px) {
+      .scanner-page { padding: 1.75rem 1rem; }
+      .scanner-header { margin-bottom: 1.5rem; }
+      .state-card { padding: 1.75rem 1rem; border-radius: 16px; }
+      .manual-input-row { flex-direction: column; }
+      .btn-go, .btn-start { width: 100%; min-height: 46px; }
+      .scan-frame { width: min(62vw, 220px); height: min(62vw, 220px); }
+      .scan-tips { padding: 1.25rem 1rem; }
+    }
   `]
 })
 export class ScannerComponent implements AfterViewInit, OnDestroy {

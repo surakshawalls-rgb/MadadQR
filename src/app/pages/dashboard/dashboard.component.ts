@@ -23,7 +23,7 @@ const BASE_URL = 'https://madad-qr.vercel.app';
           </div>
           <div class="header-actions">
             <a routerLink="/register" class="btn-new">+ Register Another</a>
-            <a routerLink="/all-vehicles" class="btn-all-vehicles">📋 All Vehicles</a>
+            <a routerLink="/all-vehicles" class="btn-all-vehicles">Vehicle Directory</a>
           </div>
         </div>
 
@@ -373,8 +373,13 @@ const BASE_URL = 'https://madad-qr.vercel.app';
       .action-grid { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 640px) {
+      .dashboard-page { padding: 1.75rem 1rem; }
+      .dash-header { flex-direction: column; align-items: center; text-align: center; gap: 1rem; }
       .dash-grid { grid-template-columns: 1fr; }
       .action-grid { grid-template-columns: repeat(2, 1fr); }
+      .dash-card { padding: 1.25rem 1rem; }
+      .detail-row { align-items: flex-start; }
+      .detail-row span:last-child { text-align: right; overflow-wrap: anywhere; }
     }
   `]
 })

@@ -436,11 +436,18 @@ import { CommonModule } from '@angular/common';
       .hero-visual { display: none; }
     }
     @media (max-width: 640px) {
+      .hero { padding: 3rem 1rem 3.5rem; text-align: center; align-items: center; }
+      .hero-content { width: 100%; }
       .hero-content h1 { font-size: clamp(2.2rem, 12vw, 2.9rem); }
+      .hero-content > p { margin-left: auto; margin-right: auto; }
+      .hero-badge { margin-left: auto; margin-right: auto; }
       .step-arrow { display: none; }
       .steps { flex-direction: column; }
       .hero-actions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; }
-      .hero-notes { flex-direction: column; }
+      .hero-notes { flex-direction: column; align-items: center; }
+      .section { padding: 3.5rem 1rem; }
+      .section-header { text-align: center; }
+      .cta-box { padding: 2.25rem 1rem; }
     }
   `]
 })

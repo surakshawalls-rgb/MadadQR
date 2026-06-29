@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
       <div class="footer-container">
         <div class="footer-brand">
           <span class="brand-logo"><img src="/MadadQRLogo.png" alt="MadadQR" style="width:28px;height:28px;border-radius:6px;object-fit:contain;vertical-align:middle;margin-right:6px;" /> MadadQR</span>
-          <p>Quick vehicle assistance through a simple QR flow</p>
+          <p>Helping people reach vehicle owners when it matters.</p>
         </div>
         <div class="footer-links">
           <a routerLink="/about">About</a>
@@ -71,7 +71,12 @@ import { RouterLink } from '@angular/router';
     .footer-credit { color: #64748b; }
     .footer-credit a { color: #a78bfa; font-weight: 700; }
     @media (max-width: 640px) {
-      .footer-copy { text-align: left; }
+      .footer { padding: 2rem 1rem 1.25rem; }
+      .footer-container { flex-direction: column; align-items: center; gap: 1.5rem; text-align: center; }
+      .footer-brand { max-width: 320px; }
+      .footer-links { justify-content: center; gap: 0.75rem 1.25rem; }
+      .footer-links a { min-height: 36px; display: inline-flex; align-items: center; }
+      .footer-copy { width: 100%; text-align: center; }
     }
   `]
 })

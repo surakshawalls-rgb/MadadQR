@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MadadQR</string>
+    <string name="title_activity_main">MadadQR</string>
+    <string name="package_name">com.madadqr.app</string>
+    <string name="custom_url_scheme">com.madadqr.app</string>
+</resources>

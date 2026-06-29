@@ -1,7 +1,7 @@
 /* MadadQR Global Styles */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -9,6 +9,8 @@ body {
   color: #e2e8f0;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  min-width: 320px;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 { line-height: 1.2; }
@@ -21,6 +23,69 @@ input, button, select, textarea {
 }
 
 img { max-width: 100%; height: auto; }
+
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, a { touch-action: manipulation; }
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 3px solid rgba(129, 140, 248, 0.38);
+  outline-offset: 2px;
+}
+
+/* Shared responsive guardrails for every routed screen. */
+app-root { display: block; min-width: 0; }
+app-root main, router-outlet { min-width: 0; }
+.register-container, .dash-container, .av-container, .qr-container,
+.scanner-container, .edit-container, .page-container, .scan-card {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .register-page, .dashboard-page, .av-page, .qr-page, .scanner-page,
+  .edit-page, .about-page, .contact-page, .privacy-page, .scan-page,
+  .login-page {
+    padding: 1.75rem 1rem !important;
+  }
+
+  .scanner-header, .av-header, .dash-header, .page-header, .form-header,
+  .edit-header, .qr-header {
+    text-align: center;
+  }
+
+  .scanner-header h1, .av-header h1, .dash-header h1, .page-header h1,
+  .form-header h1, .edit-header h1, .qr-header h1 {
+    font-size: clamp(1.55rem, 7vw, 1.9rem) !important;
+  }
+
+  .state-card, .scan-tips, .info-card, .privacy-card, .contact-card,
+  .edit-card, .login-card {
+    padding: 1.5rem 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  .manual-input-row, .modal-actions, .success-actions, .qr-btns {
+    flex-wrap: wrap;
+  }
+
+  .manual-input-row > *, .modal-actions > *, .success-actions > *, .qr-btns > * {
+    min-height: 44px;
+  }
+
+  .qr-preview, .sticker-body {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center;
+  }
+
+  .qr-preview .qr-info { width: 100%; }
+  .qr-url-small { overflow-wrap: anywhere; }
+  .type-picker { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 380px) {
+  .manual-input-row { flex-direction: column; }
+  .manual-input-row .btn-go { width: 100%; }
+}
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #06060f; }
