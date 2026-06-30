@@ -18,6 +18,13 @@ import { SupabaseService } from '../../services/supabase.service';
         <button class="nav-toggle" (click)="toggleMenu()" aria-label="Toggle navigation menu" [attr.aria-expanded]="menuOpen">
           <span></span><span></span><span></span>
         </button>
+        <button
+          *ngIf="menuOpen"
+          class="nav-backdrop"
+          type="button"
+          aria-label="Close navigation menu"
+          (click)="closeMenu()"
+        ></button>
         <ul class="nav-links" [class.open]="menuOpen">
           <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="closeMenu()">Home</a></li>
           <li><a routerLink="/register" routerLinkActive="active" (click)="closeMenu()">Register Vehicle</a></li>
@@ -135,8 +142,20 @@ import { SupabaseService } from '../../services/supabase.service';
     .nav-logout:hover { background: rgba(248,113,113,0.1); }
     .nav-toggle { display: none; flex-direction: column; gap: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; padding: 10px; border-radius: 12px; }
     .nav-toggle span { display: block; width: 22px; height: 2px; background: #cbd5e1; border-radius: 2px; transition: 0.3s; }
+    .nav-backdrop { display: none; }
     @media (max-width: 768px) {
       .nav-toggle { display: flex; }
+      .nav-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        top: calc(64px + env(safe-area-inset-top, 0px));
+        background: rgba(0,0,0,0.28);
+        border: 0;
+        margin: 0;
+        padding: 0;
+        z-index: 998;
+      }
       .nav-links {
         display: none;
         flex-direction: column;
@@ -150,6 +169,7 @@ import { SupabaseService } from '../../services/supabase.service';
         max-height: calc(100dvh - 64px);
         overflow-y: auto;
         box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+        z-index: 999;
       }
       .nav-links.open { display: flex; }
       .nav-links li { width: 100%; }

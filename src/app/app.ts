@@ -2,6 +2,8 @@ import { Component, Inject, OnDestroy, PLATFORM_ID, signal } from '@angular/core
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp, type BackButtonListenerEvent } from '@capacitor/app';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { FooterComponent } from './components/footer/footer.component';
 
@@ -43,7 +45,7 @@ import { FooterComponent } from './components/footer/footer.component';
     .splash-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#6366f1,#a78bfa,#22d3ee); animation: splashLoad 1.4s cubic-bezier(.2,.8,.2,1) both; }
     .splash-glow { position: absolute; width: 45vw; height: 45vw; border-radius: 50%; filter: blur(90px); opacity: 0.18; }
     .splash-glow-one { top: -20%; left: -12%; background: #6366f1; } .splash-glow-two { right: -16%; bottom: -24%; background: #7c3aed; }
-    .route-progress { position: fixed; z-index: 10000; top: 0; left: 0; right: 0; height: 3px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .route-progress { position: fixed; z-index: 10000; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: 3px; opacity: 0; pointer-events: none; transition: opacity .2s; }
     .route-progress.visible { opacity: 1; } .route-progress span { display: block; width: 40%; height: 100%; background: linear-gradient(90deg,#6366f1,#a78bfa,#22d3ee); animation: routeLoad 1s ease-in-out infinite; }
     @keyframes splashIn { from { opacity: 0; transform: translateY(10px) scale(.97); } }
     @keyframes splashLoad { from { width: 0; } to { width: 100%; } }
@@ -55,9 +57,25 @@ export class App implements OnDestroy {
   readonly showSplash = signal(false);
   readonly navigating = signal(false);
   private navigationSubscription?: Subscription;
+  private backButtonListener?: Promise<{ remove: () => Promise<void> }>;
 
   constructor(@Inject(PLATFORM_ID) platformId: object, router: Router) {
     if (!isPlatformBrowser(platformId)) return;
+
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      document.body.classList.add('native-android');
+      this.backButtonListener = CapacitorApp.addListener('backButton', ({ canGoBack }: BackButtonListenerEvent) => {
+        if (canGoBack) {
+          window.history.back();
+          return;
+        }
+
+        if (window.confirm('Do you want to close MadadQR?')) {
+          CapacitorApp.exitApp();
+        }
+      });
+    }
+
     this.showSplash.set(true);
     window.setTimeout(() => this.showSplash.set(false), 1550);
     this.navigationSubscription = router.events.subscribe(event => {
@@ -66,5 +84,10 @@ export class App implements OnDestroy {
     });
   }
 
-  ngOnDestroy() { this.navigationSubscription?.unsubscribe(); }
+  ngOnDestroy() {
+    this.navigationSubscription?.unsubscribe();
+    if (this.backButtonListener) {
+      this.backButtonListener.then(listener => listener.remove());
+    }
+  }
 }

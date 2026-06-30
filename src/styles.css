@@ -13,6 +13,11 @@ body {
   overflow-x: hidden;
 }
 
+/* Keep content below Android status bar / notch area in native builds. */
+body.native-android {
+  padding-top: max(env(safe-area-inset-top, 0px), 8px);
+}
+
 h1, h2, h3, h4, h5, h6 { line-height: 1.2; }
 
 a { color: inherit; }

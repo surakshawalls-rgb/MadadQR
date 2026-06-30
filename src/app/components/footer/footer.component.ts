@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -9,7 +10,7 @@ import { RouterLink } from '@angular/router';
     <footer class="footer">
       <div class="footer-container">
         <div class="footer-brand">
-          <span class="brand-logo"><img src="/MadadQRLogo.png" alt="MadadQR" style="width:28px;height:28px;border-radius:6px;object-fit:contain;vertical-align:middle;margin-right:6px;" /> MadadQR</span>
+          <span class="brand-logo"><img [src]="logoUrl" alt="MadadQR" style="width:28px;height:28px;border-radius:6px;object-fit:contain;vertical-align:middle;margin-right:6px;" /> MadadQR</span>
           <p>Helping people reach vehicle owners when it matters.</p>
         </div>
         <div class="footer-links">
@@ -17,7 +18,7 @@ import { RouterLink } from '@angular/router';
           <a routerLink="/contact">Contact</a>
           <a routerLink="/privacy">Privacy</a>
           <a routerLink="/register">Get QR</a>
-          <a href="/MadadQR.apk" download="MadadQR.apk">Download App</a>
+          <a [href]="apkUrl" download="MadadQR.apk">Download App</a>
         </div>
         <div class="footer-copy">
           <p>© 2026 MadadQR. Built for reliable everyday use.</p>
@@ -80,4 +81,13 @@ import { RouterLink } from '@angular/router';
     }
   `]
 })
-export class FooterComponent {}
+export class FooterComponent {
+  private readonly baseHref = inject(APP_BASE_HREF, { optional: true }) ?? '/';
+
+  private readonly normalizedBaseHref = this.baseHref.endsWith('/')
+    ? this.baseHref
+    : `${this.baseHref}/`;
+
+  readonly apkUrl = `${this.normalizedBaseHref}MadadQR.apk`;
+  readonly logoUrl = `${this.normalizedBaseHref}MadadQRLogo.png`;
+}
